@@ -1,0 +1,103 @@
+{# 通用组件宏：图标、头像、文章卡片、分页、空状态 #}
+
+{% macro icon(name, size=18, class_name='') -%}
+<svg class="icon {{ class_name }}" width="{{ size }}" height="{{ size }}" aria-hidden="true" focusable="false">
+  <use href="#i-{{ name }}"></use>
+</svg>
+{%- endmacro %}
+
+{% macro avatar(user=None, name='', size='md') -%}
+  {% set display = name or (user.display_name if user else '访客') %}
+  {% if user and user.avatar %}
+    <img class="avatar avatar--{{ size }}" src="{{ user.avatar }}" alt="{{ display }}的头像" loading="lazy">
+  {% else %}
+    <span class="avatar avatar--{{ size }} avatar--letter" aria-hidden="true">{{ display[0]|upper }}</span>
+  {% endif %}
+{%- endmacro %}
+
+{% macro post_card(post, compact=false) -%}
+<article class="post-card{% if compact %} post-card--compact{% endif %}">
+  <a class="post-card__cover" href="{{ url_for('main.post_detail', post_id=post.id) }}" aria-label="阅读《{{ post.title }}》">
+    <img src="{{ post.cover_url }}" alt="" loading="lazy" width="1200" height="675">
+    {% if post.is_top %}<span class="post-card__pin">{{ icon('pin', 13) }} 置顶</span>{% endif %}
+    {% if not post.is_published %}<span class="post-card__pin post-card__pin--draft">草稿</span>{% endif %}
+  </a>
+  <div class="post-card__body">
+    <div class="post-card__kicker">
+      {% if post.category %}
+        <a class="chip chip--category" href="{{ url_for('main.category_filter', category_id=post.category.id) }}" style="--chip-color: {{ post.category.color }}">{{ post.category.name }}</a>
+      {% else %}
+        <span class="chip chip--muted">未分类</span>
+      {% endif %}
+      <span class="post-card__date">{{ post.published_at|datetime_cn('%Y.%m.%d') if post.published_at else post.updated_at|datetime_cn('%Y.%m.%d') }}</span>
+    </div>
+    <h3 class="post-card__title">
+      <a href="{{ url_for('main.post_detail', post_id=post.id) }}">{{ post.title }}</a>
+    </h3>
+    <p class="post-card__summary">{{ post.summary or '这篇文章还没有写摘要。' }}</p>
+    <div class="post-card__footer">
+      <div class="post-card__meta">
+        <span>{{ icon('eye', 15) }}{{ post.view_count|number_cn }}</span>
+        <span>{{ icon('clock', 15) }}{{ post.reading_minutes }} 分钟</span>
+        <span>{{ icon('tag', 15) }}{{ post.tags|length }}</span>
+      </div>
+      <span class="post-card__arrow" aria-hidden="true">{{ icon('arrow-up-right', 17) }}</span>
+    </div>
+  </div>
+</article>
+{%- endmacro %}
+
+{% macro page_nav(pagination) -%}
+{% if pagination.pages > 1 %}
+<nav class="pagination" aria-label="分页导航">
+  {% if pagination.has_prev %}
+    <a class="pagination__btn" href="{{ page_url(pagination.prev_num) }}" aria-label="上一页">{{ icon('arrow-left', 16) }}<span>上一页</span></a>
+  {% else %}
+    <span class="pagination__btn is-disabled" aria-disabled="true">{{ icon('arrow-left', 16) }}<span>上一页</span></span>
+  {% endif %}
+
+  <div class="pagination__pages">
+    {% for page in pagination.iter_pages(left_edge=1, left_current=2, right_current=2, right_edge=1) %}
+      {% if page %}
+        {% if page == pagination.page %}
+          <span class="pagination__page is-current" aria-current="page">{{ page }}</span>
+        {% else %}
+          <a class="pagination__page" href="{{ page_url(page) }}">{{ page }}</a>
+        {% endif %}
+      {% else %}
+        <span class="pagination__ellipsis">…</span>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  {% if pagination.has_next %}
+    <a class="pagination__btn" href="{{ page_url(pagination.next_num) }}" aria-label="下一页"><span>下一页</span>{{ icon('arrow-right', 16) }}</a>
+  {% else %}
+    <span class="pagination__btn is-disabled" aria-disabled="true"><span>下一页</span>{{ icon('arrow-right', 16) }}</span>
+  {% endif %}
+</nav>
+{% endif %}
+{%- endmacro %}
+
+{% macro empty_state(title, description, action_url='', action_label='') -%}
+<div class="empty-state">
+  <div class="empty-state__mark">{{ icon('notes', 30) }}</div>
+  <h3>{{ title }}</h3>
+  <p>{{ description }}</p>
+  {% if action_url %}<a class="btn btn--primary btn--sm" href="{{ action_url }}">{{ action_label }}</a>{% endif %}
+</div>
+{%- endmacro %}
+
+{% macro status_badge(status) -%}
+  {% if status == 'published' %}
+    <span class="status status--success"><span class="status__dot"></span>已发布</span>
+  {% elif status == 'draft' %}
+    <span class="status status--neutral"><span class="status__dot"></span>草稿</span>
+  {% elif status == 'approved' %}
+    <span class="status status--success"><span class="status__dot"></span>已通过</span>
+  {% elif status == 'pending' %}
+    <span class="status status--warning"><span class="status__dot"></span>待审核</span>
+  {% elif status == 'rejected' %}
+    <span class="status status--danger"><span class="status__dot"></span>已驳回</span>
+  {% endif %}
+{%- endmacro %}

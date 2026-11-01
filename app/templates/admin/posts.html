@@ -1,0 +1,82 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import icon, status_badge, page_nav, empty_state with context %}
+{% block title %}文章管理{% endblock %}
+
+{% block admin_content %}
+<header class="admin-page-head">
+  <div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> CONTENT</p>
+    <h1>文章管理</h1>
+    <p>创建、编辑、发布或下架你的知识笔记。</p>
+  </div>
+  <div class="admin-page-head__actions">
+    <a class="btn btn--primary btn--sm" href="{{ url_for('admin.post_new') }}">{{ icon('plus', 16) }} 写新文章</a>
+  </div>
+</header>
+
+<section class="panel">
+  <div class="toolbar">
+    <nav class="tab-list" aria-label="文章状态筛选">
+      <a class="{% if status == 'all' %}is-active{% endif %}" href="{{ filter_url('admin.posts', status='all', q=q or None) }}">全部 <span>{{ counts.all }}</span></a>
+      <a class="{% if status == 'published' %}is-active{% endif %}" href="{{ filter_url('admin.posts', status='published', q=q or None) }}">已发布 <span>{{ counts.published }}</span></a>
+      <a class="{% if status == 'draft' %}is-active{% endif %}" href="{{ filter_url('admin.posts', status='draft', q=q or None) }}">草稿 <span>{{ counts.draft }}</span></a>
+    </nav>
+    <form class="toolbar__search" method="get" action="{{ url_for('admin.posts') }}">
+      <input type="hidden" name="status" value="{{ status }}">
+      <span>{{ icon('search', 16) }}</span>
+      <input type="search" name="q" value="{{ q }}" placeholder="搜索标题、摘要…" maxlength="80">
+      <button class="btn btn--soft btn--sm" type="submit">筛选</button>
+    </form>
+  </div>
+
+  {% if pagination.items %}
+    <div class="table-wrap">
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>文章</th>
+            <th>分类</th>
+            <th>状态</th>
+            <th>阅读</th>
+            <th>更新时间</th>
+            <th class="table-actions">操作</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for post in pagination.items %}
+            <tr>
+              <td data-label="文章">
+                <div class="table-post">
+                  <img src="{{ post.cover_url }}" alt="" width="76" height="48" loading="lazy">
+                  <div>
+                    <a href="{{ url_for('main.post_detail', post_id=post.id) }}" target="_blank" rel="noopener">{{ post.title }}</a>
+                    <span>{{ post.summary|truncate(46) if post.summary else '暂无摘要' }}</span>
+                  </div>
+                  {% if post.is_top %}<span class="top-mark" title="置顶">{{ icon('pin', 12) }}</span>{% endif %}
+                </div>
+              </td>
+              <td data-label="分类">{% if post.category %}<span class="chip chip--category" style="--chip-color: {{ post.category.color }}">{{ post.category.name }}</span>{% else %}<span class="muted">未分类</span>{% endif %}</td>
+              <td data-label="状态">{{ status_badge(post.status) }}</td>
+              <td data-label="阅读"><span class="table-number">{{ post.view_count|number_cn }}</span></td>
+              <td data-label="更新时间"><span class="table-muted">{{ post.updated_at|datetime_cn('%m-%d %H:%M') }}</span></td>
+              <td data-label="操作">
+                <div class="table-actions">
+                  <a class="icon-action" href="{{ url_for('admin.post_edit', post_id=post.id) }}" title="编辑" aria-label="编辑《{{ post.title }}》">{{ icon('edit', 16) }}</a>
+                  <a class="icon-action" href="{{ url_for('main.post_detail', post_id=post.id) }}" target="_blank" rel="noopener" title="预览" aria-label="预览《{{ post.title }}》">{{ icon('eye', 16) }}</a>
+                  <form method="post" action="{{ url_for('admin.post_delete', post_id=post.id) }}" data-confirm="确定删除《{{ post.title }}》吗？该操作会同时删除评论和收藏记录，且不可恢复。">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button class="icon-action icon-action--danger" type="submit" title="删除" aria-label="删除《{{ post.title }}》">{{ icon('trash', 16) }}</button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {{ page_nav(pagination) }}
+  {% else %}
+    {{ empty_state('还没有文章', '写下第一篇笔记，让它成为小栈的第一块木板。', url_for('admin.post_new'), '写新文章') }}
+  {% endif %}
+</section>
+{% endblock %}

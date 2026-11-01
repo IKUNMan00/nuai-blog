@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, avatar %}
+{% block body_class %}account-page{% endblock %}
+
+{% block content %}
+<div class="container account-shell">
+  <aside class="account-sidebar">
+    <div class="account-profile">
+      {{ avatar(current_user, size='lg') }}
+      <div>
+        <strong>{{ current_user.display_name }}</strong>
+        <span>{{ '博主 · 管理员' if current_user.is_admin else '注册读者' }}</span>
+      </div>
+    </div>
+    <nav class="account-nav" aria-label="账号导航">
+      <a class="{% if request.endpoint == 'account.overview' %}is-active{% endif %}" href="{{ url_for('account.overview') }}">{{ icon('user', 17) }} 账号资料</a>
+      <a class="{% if request.endpoint == 'account.favorites' %}is-active{% endif %}" href="{{ url_for('account.favorites') }}">{{ icon('bookmark', 17) }} 我的收藏</a>
+      <a class="{% if request.endpoint == 'account.comments' %}is-active{% endif %}" href="{{ url_for('account.comments') }}">{{ icon('message', 17) }} 我的评论</a>
+      {% if current_user.is_admin %}
+        <a href="{{ url_for('admin.dashboard') }}">{{ icon('chart', 17) }} 数据看板</a>
+      {% endif %}
+    </nav>
+    <div class="account-sidebar__foot">
+      <a href="{{ url_for('main.index') }}">{{ icon('arrow-left', 15) }} 返回首页</a>
+    </div>
+  </aside>
+
+  <div class="account-main">
+    {% block account_content %}{% endblock %}
+  </div>
+</div>
+{% endblock %}

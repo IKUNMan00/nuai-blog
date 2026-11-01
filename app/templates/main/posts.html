@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, post_card, page_nav, empty_state with context %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block description %}浏览{{ site_name }}的{{ page_title }}，共 {{ pagination.total }} 篇文章。{% endblock %}
+
+{% block content %}
+<section class="page-hero">
+  <div class="container page-hero__inner">
+    <div>
+      <nav class="breadcrumb" aria-label="面包屑">
+        <a href="{{ url_for('main.index') }}">首页</a>
+        <span>/</span>
+        <span>文章</span>
+      </nav>
+      <p class="eyebrow"><span class="eyebrow__line"></span> ALL NOTES</p>
+      <h1>{{ page_title }}</h1>
+      <p class="page-hero__lead">
+        {% if q %}在标题、摘要和正文中检索到 <strong>{{ pagination.total }}</strong> 篇相关笔记。
+        {% elif active_category %}{{ active_category.description or '这一分类下的全部公开笔记。' }}
+        {% elif active_tag %}所有带有 <strong>#{{ active_tag.name }}</strong> 标签的笔记。
+        {% else %}共 {{ pagination.total }} 篇公开笔记，按置顶与发布时间排序。{% endif %}
+      </p>
+    </div>
+    <div class="page-hero__stamp" aria-hidden="true">
+      <span>{{ icon('notes', 24) }}</span>
+      <strong>{{ pagination.total }}</strong>
+      <small>NOTES<br>IN STACK</small>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="container">
+    <div class="filter-panel">
+      <form class="filter-search" method="get" action="{{ url_for('main.posts') }}">
+        <label class="sr-only" for="post-search">搜索文章</label>
+        <span class="filter-search__icon">{{ icon('search', 18) }}</span>
+        <input id="post-search" type="search" name="q" value="{{ q }}" placeholder="搜索标题、摘要或正文…" maxlength="80">
+        {% if active_category %}<input type="hidden" name="category" value="{{ active_category.id }}">{% endif %}
+        {% if active_tag %}<input type="hidden" name="tag" value="{{ active_tag.id }}">{% endif %}
+        <button class="btn btn--primary btn--sm" type="submit">搜索</button>
+      </form>
+
+      <div class="filter-categories" aria-label="按分类筛选">
+        <a class="filter-chip {% if not active_category %}is-active{% endif %}" href="{{ filter_url(category=None, q=q or None, tag=active_tag.id if active_tag else None) }}">全部</a>
+        {% for category in categories %}
+          <a class="filter-chip {% if active_category and active_category.id == category.id %}is-active{% endif %}"
+             href="{{ filter_url(category=category.id, q=q or None, tag=active_tag.id if active_tag else None) }}">{{ category.name }}</a>
+        {% endfor %}
+      </div>
+
+      {% if tags %}
+      <details class="filter-tags">
+        <summary>{{ icon('tag', 15) }} 按标签筛选 {% if active_tag %}<span class="filter-tags__current">#{{ active_tag.name }}</span>{% endif %}</summary>
+        <div class="filter-tags__list">
+          {% for tag in tags %}
+            <a class="tag-pill tag-pill--sm {% if active_tag and active_tag.id == tag.id %}is-active{% endif %}"
+               href="{{ filter_url(tag=tag.id, q=q or None, category=active_category.id if active_category else None) }}"
+               style="--tag-color: {{ tag.color }}"><span>#</span>{{ tag.name }}</a>
+          {% endfor %}
+        </div>
+      </details>
+      {% endif %}
+
+      {% if q or active_category or active_tag %}
+        <div class="active-filters">
+          <span>当前筛选：</span>
+          {% if q %}<span class="active-filter">关键词「{{ q }}」</span>{% endif %}
+          {% if active_category %}<span class="active-filter">{{ active_category.name }}</span>{% endif %}
+          {% if active_tag %}<span class="active-filter">#{{ active_tag.name }}</span>{% endif %}
+          <a class="active-filters__clear" href="{{ url_for('main.posts') }}">清除全部 {{ icon('close', 12) }}</a>
+        </div>
+      {% endif %}
+    </div>
+
+    {% if posts %}
+      <div class="post-grid post-grid--listing">
+        {% for post in posts %}
+          {{ post_card(post) }}
+        {% endfor %}
+      </div>
+      {{ page_nav(pagination) }}
+    {% else %}
+      {{ empty_state('没有找到匹配的笔记', '换一个关键词，或清除筛选条件再试试。', url_for('main.posts'), '查看全部文章') }}
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

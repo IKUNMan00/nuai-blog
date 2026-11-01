@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="知识小栈默认封面">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#edf1e8"/>
+      <stop offset="1" stop-color="#dce5d8"/>
+    </linearGradient>
+    <linearGradient id="arch" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1f6f5c"/>
+      <stop offset="1" stop-color="#124b3e"/>
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#1f6f5c" stroke-opacity=".09"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#grid)"/>
+  <path d="M830 675V340c0-153 88-277 197-277s197 124 197 277v335Z" fill="url(#arch)" opacity=".95"/>
+  <circle cx="1027" cy="232" r="63" fill="#e9a272"/>
+  <path d="M770 552c118-66 250-60 378 20" fill="none" stroke="#1f6f5c" stroke-width="3"/>
+  <text x="92" y="166" fill="#2f6b59" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="25" letter-spacing="7">PERSONAL KNOWLEDGE STACK</text>
+  <text x="84" y="318" fill="#1d2c25" font-family="Georgia, 'Times New Roman', serif" font-size="118" font-weight="700">Keep what</text>
+  <text x="84" y="432" fill="#c96f3b" font-family="Georgia, 'Times New Roman', serif" font-size="118" font-style="italic">matters.</text>
+  <path d="M90 480h370" stroke="#2f6b59" stroke-width="2"/>
+  <text x="90" y="536" fill="#5d6b63" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="22">write · connect · revisit</text>
+  <g transform="translate(720 290) rotate(-4)">
+    <rect width="280" height="165" rx="8" fill="#fffdf7" stroke="#1d2c25" stroke-opacity=".16"/>
+    <path d="M30 46h160M30 72h210M30 98h125M30 124h185" stroke="#1f6f5c" stroke-opacity=".3" stroke-width="7" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(755 330) rotate(4)">
+    <rect width="280" height="160" rx="8" fill="#f6ead7" stroke="#1d2c25" stroke-opacity=".12"/>
+    <path d="M30 45h205M30 71h140M30 97h180" stroke="#c96f3b" stroke-opacity=".4" stroke-width="7" stroke-linecap="round"/>
+  </g>
+  <g fill="#1d2c25" fill-opacity=".45">
+    <circle cx="90" cy="606" r="3"/><circle cx="120" cy="606" r="3"/><circle cx="150" cy="606" r="3"/>
+  </g>
+</svg>

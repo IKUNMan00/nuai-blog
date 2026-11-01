@@ -1,0 +1,94 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}分类管理{% endblock %}
+
+{% block admin_content %}
+<header class="admin-page-head">
+  <div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> TAXONOMY</p>
+    <h1>分类与标签</h1>
+    <p>用分类建立主干，用标签连接零散的主题。</p>
+  </div>
+  <div class="admin-page-head__actions">
+    <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.tags') }}">{{ icon('tag', 15) }} 管理标签</a>
+  </div>
+</header>
+
+<div class="taxonomy-layout">
+  <section class="panel taxonomy-form-panel">
+    <div class="panel__head">
+      <div><p class="eyebrow">NEW CATEGORY</p><h2>添加分类</h2></div>
+    </div>
+    <form class="stacked-form" method="post" action="{{ url_for('admin.categories') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="name">分类名称 <span>*</span></label>
+        <input id="name" name="name" type="text" maxlength="50" required placeholder="例如：项目复盘">
+      </div>
+      <div class="field">
+        <label for="description">分类说明</label>
+        <textarea id="description" name="description" rows="2" maxlength="255" placeholder="一句话说明这一类记录什么。"></textarea>
+      </div>
+      <div class="form-row form-row--two">
+        <div class="field">
+          <label for="color">主题色</label>
+          <div class="color-input">
+            <input id="color" name="color" type="color" value="#1f6f5c">
+            <span>用于分类标识</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="sort_order">排序值</label>
+          <input id="sort_order" name="sort_order" type="number" value="0" min="-999" max="999">
+        </div>
+      </div>
+      <button class="btn btn--primary btn--block" type="submit">{{ icon('plus', 16) }} 添加分类</button>
+    </form>
+    <div class="panel-note">{{ icon('spark', 15) }} 分类删除后，其下文章会自动归入“未分类”，不会删除文章。</div>
+  </section>
+
+  <section class="panel">
+    <div class="panel__head">
+      <div><p class="eyebrow">CATEGORY LIST</p><h2>现有分类 <span class="panel__count">{{ rows|length }}</span></h2></div>
+    </div>
+    <div class="taxonomy-list">
+      {% for category, count in rows %}
+        <div class="taxonomy-item">
+          <div class="taxonomy-item__main">
+            <span class="taxonomy-item__dot" style="--dot: {{ category.color }}"></span>
+            <div>
+              <strong>{{ category.name }}</strong>
+              <span>{{ category.description or '暂无说明' }} · {{ count }} 篇文章</span>
+            </div>
+          </div>
+          <div class="taxonomy-item__actions">
+            <a class="icon-action" href="{{ url_for('main.category_filter', category_id=category.id) }}" target="_blank" rel="noopener" title="查看分类" aria-label="查看{{ category.name }}">{{ icon('eye', 16) }}</a>
+            <button class="icon-action" type="button" data-toggle-edit="category-edit-{{ category.id }}" title="编辑" aria-label="编辑{{ category.name }}" aria-expanded="false">{{ icon('edit', 16) }}</button>
+            <form method="post" action="{{ url_for('admin.category_delete', category_id=category.id) }}" data-confirm="删除分类「{{ category.name }}」？其下 {{ count }} 篇文章将变为未分类。">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="icon-action icon-action--danger" type="submit" title="删除" aria-label="删除{{ category.name }}">{{ icon('trash', 16) }}</button>
+            </form>
+          </div>
+        </div>
+        <div class="taxonomy-edit" id="category-edit-{{ category.id }}" hidden>
+          <form method="post" action="{{ url_for('admin.category_edit', category_id=category.id) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-row form-row--three">
+              <div class="field"><label>名称</label><input name="name" type="text" value="{{ category.name }}" maxlength="50" required></div>
+              <div class="field"><label>主题色</label><input name="color" type="color" value="{{ category.color }}"></div>
+              <div class="field"><label>排序</label><input name="sort_order" type="number" value="{{ category.sort_order }}" min="-999" max="999"></div>
+            </div>
+            <div class="field"><label>说明</label><input name="description" type="text" value="{{ category.description or '' }}" maxlength="255"></div>
+            <div class="taxonomy-edit__actions">
+              <button class="btn btn--primary btn--sm" type="submit">保存修改</button>
+              <button class="btn btn--ghost btn--sm" type="button" data-toggle-edit="category-edit-{{ category.id }}">取消</button>
+            </div>
+          </form>
+        </div>
+      {% else %}
+        <p class="muted">还没有分类，先添加一个吧。</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

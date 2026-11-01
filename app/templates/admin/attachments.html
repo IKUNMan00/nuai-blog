@@ -1,0 +1,64 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import icon, page_nav, empty_state with context %}
+{% block title %}图片附件{% endblock %}
+
+{% block admin_content %}
+<header class="admin-page-head">
+  <div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> MEDIA LIBRARY</p>
+    <h1>图片附件</h1>
+    <p>编辑器上传的图片统一保存在这里。复制 Markdown 链接即可插入文章。</p>
+  </div>
+  <div class="admin-page-head__actions">
+    <span class="moderation-pill">{{ icon('image', 15) }} 共 {{ (total_size / 1024 / 1024)|round(1) }} MB</span>
+  </div>
+</header>
+
+<section class="upload-panel">
+  <form class="upload-drop" method="post" action="{{ url_for('admin.attachment_upload') }}" enctype="multipart/form-data">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <span class="upload-drop__icon">{{ icon('upload', 26) }}</span>
+    <div>
+      <strong>上传一张新图片</strong>
+      <p>支持 JPG / PNG / GIF / WEBP，单张最大 5MB。</p>
+    </div>
+    <label class="btn btn--primary btn--sm">
+      选择图片
+      <input type="file" name="file" accept="image/jpeg,image/png,image/gif,image/webp" required data-auto-submit>
+    </label>
+  </form>
+</section>
+
+<section class="panel">
+  <div class="panel__head">
+    <div><p class="eyebrow">UPLOADED FILES</p><h2>全部附件 <span class="panel__count">{{ pagination.total }}</span></h2></div>
+  </div>
+
+  {% if pagination.items %}
+    <div class="attachment-grid">
+      {% for attachment in pagination.items %}
+        <article class="attachment-card">
+          <a class="attachment-card__preview" href="{{ attachment.url }}" target="_blank" rel="noopener" title="查看原图">
+            <img src="{{ attachment.url }}" alt="{{ attachment.original_name }}" loading="lazy">
+          </a>
+          <div class="attachment-card__body">
+            <strong title="{{ attachment.original_name }}">{{ attachment.original_name|truncate(28) }}</strong>
+            <span>{{ attachment.size_kb }} KB · {{ attachment.created_at|datetime_cn('%Y-%m-%d') }}</span>
+          </div>
+          <div class="attachment-card__actions">
+            <button class="btn btn--soft btn--xs" type="button" data-copy="![{{ attachment.original_name }}]({{ attachment.url }})" data-copy-label="Markdown 已复制">{{ icon('code', 13) }} MD</button>
+            <button class="btn btn--ghost btn--xs" type="button" data-copy="{{ attachment.url }}" data-copy-label="图片链接已复制">{{ icon('link', 13) }} 链接</button>
+            <form method="post" action="{{ url_for('admin.attachment_delete', attachment_id=attachment.id) }}" data-confirm="删除这张图片？引用它的文章会出现图片失效。">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="icon-action icon-action--danger" type="submit" title="删除" aria-label="删除{{ attachment.original_name }}">{{ icon('trash', 15) }}</button>
+            </form>
+          </div>
+        </article>
+      {% endfor %}
+    </div>
+    {{ page_nav(pagination) }}
+  {% else %}
+    {{ empty_state('还没有上传图片', '在文章编辑器中上传图片，或使用上方按钮上传第一张。') }}
+  {% endif %}
+</section>
+{% endblock %}

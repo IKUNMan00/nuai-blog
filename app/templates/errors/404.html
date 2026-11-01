@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}页面不存在{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <div class="container error-page__inner">
+    <div class="error-code">404</div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> LOST IN THE STACK</p>
+    <h1>这张便签从栈里掉出去了。</h1>
+    <p>页面可能已被移动、删除，或者链接写错了。试试搜索，或者回到最新文章。</p>
+    <div class="error-actions">
+      <a class="btn btn--primary" href="{{ url_for('main.index') }}">{{ icon('arrow-left', 16) }} 回到首页</a>
+      <button class="btn btn--ghost" type="button" data-open-search>{{ icon('search', 16) }} 搜索知识栈</button>
+    </div>
+    <div class="error-hints">
+      <span>可以试试：</span>
+      <a href="{{ url_for('main.posts', q='Flask') }}">Flask</a>
+      <a href="{{ url_for('main.posts', q='MySQL') }}">MySQL</a>
+      <a href="{{ url_for('main.posts', q='复盘') }}">复盘</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

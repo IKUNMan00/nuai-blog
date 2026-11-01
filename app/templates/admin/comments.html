@@ -1,0 +1,80 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import icon, avatar, status_badge, page_nav, empty_state with context %}
+{% block title %}评论审核{% endblock %}
+
+{% block admin_content %}
+<header class="admin-page-head">
+  <div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> MODERATION</p>
+    <h1>评论审核</h1>
+    <p>所有访客与读者的留言默认进入待审核队列，通过后才会在文章页展示。</p>
+  </div>
+  <div class="admin-page-head__actions">
+    <span class="moderation-pill">{{ icon('message', 15) }} {{ counts.pending }} 条待处理</span>
+  </div>
+</header>
+
+<section class="panel">
+  <div class="toolbar">
+    <nav class="tab-list" aria-label="评论状态筛选">
+      <a class="{% if status == 'pending' %}is-active{% endif %}" href="{{ url_for('admin.comments', status='pending') }}">待审核 <span>{{ counts.pending }}</span></a>
+      <a class="{% if status == 'approved' %}is-active{% endif %}" href="{{ url_for('admin.comments', status='approved') }}">已通过 <span>{{ counts.approved }}</span></a>
+      <a class="{% if status == 'rejected' %}is-active{% endif %}" href="{{ url_for('admin.comments', status='rejected') }}">已驳回 <span>{{ counts.rejected }}</span></a>
+      <a class="{% if status == 'all' %}is-active{% endif %}" href="{{ url_for('admin.comments', status='all') }}">全部 <span>{{ counts.all }}</span></a>
+    </nav>
+  </div>
+
+  <div class="moderation-list">
+    {% for comment in pagination.items %}
+      <article class="moderation-card moderation-card--{{ comment.status }}">
+        <div class="moderation-card__head">
+          <div class="moderation-card__author">
+            {{ avatar(comment.user, name=comment.display_name, size='md') }}
+            <div>
+              <strong>{{ comment.display_name }}</strong>
+              {% if comment.user %}<span class="comment__badge">注册读者</span>{% else %}<span class="comment__guest">游客</span>{% endif %}
+              <span class="moderation-card__email">
+                {% if comment.user %}{{ comment.user.email }}{% elif comment.guest_email %}{{ comment.guest_email }}{% else %}未填写邮箱{% endif %}
+              </span>
+            </div>
+          </div>
+          <div class="moderation-card__status">
+            {{ status_badge(comment.status) }}
+            <time>{{ comment.created_at|datetime_cn('%Y-%m-%d %H:%M') }}</time>
+          </div>
+        </div>
+        <blockquote class="moderation-card__content">{{ comment.content }}</blockquote>
+        <div class="moderation-card__foot">
+          <span>来自文章：<a href="{{ url_for('main.post_detail', post_id=comment.post.id) }}" target="_blank" rel="noopener">{{ comment.post.title }}</a></span>
+          <div class="moderation-card__actions">
+            {% if comment.status != 'approved' %}
+              <form method="post" action="{{ url_for('admin.comment_action', comment_id=comment.id, action='approve') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ request.full_path }}">
+                <input type="hidden" name="status" value="{{ status }}">
+                <button class="btn btn--primary btn--sm" type="submit">{{ icon('check', 15) }} 通过</button>
+              </form>
+            {% endif %}
+            {% if comment.status != 'rejected' %}
+              <form method="post" action="{{ url_for('admin.comment_action', comment_id=comment.id, action='reject') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="next" value="{{ request.full_path }}">
+                <button class="btn btn--ghost btn--sm" type="submit">{{ icon('close', 15) }} 驳回</button>
+              </form>
+            {% endif %}
+            <form method="post" action="{{ url_for('admin.comment_action', comment_id=comment.id, action='delete') }}" data-confirm="确定删除这条评论吗？该操作不可恢复。">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="next" value="{{ request.full_path }}">
+              <button class="btn btn--ghost btn--sm text-danger" type="submit">{{ icon('trash', 15) }} 删除</button>
+            </form>
+          </div>
+        </div>
+      </article>
+    {% else %}
+      {{ empty_state('这里很干净', '当前筛选条件下没有评论。') }}
+    {% endfor %}
+  </div>
+
+  {{ page_nav(pagination) }}
+</section>
+{% endblock %}

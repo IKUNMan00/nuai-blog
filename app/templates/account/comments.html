@@ -1,0 +1,38 @@
+{% extends "account/base_account.html" %}
+{% from "_macros.html" import icon, page_nav, empty_state, status_badge with context %}
+{% block title %}我的评论{% endblock %}
+
+{% block account_content %}
+<header class="account-page-head">
+  <div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> MY COMMENTS</p>
+    <h1>我的评论</h1>
+    <p>你留下的问题与补充，以及它们的审核状态。</p>
+  </div>
+  <span class="account-page-head__badge">{{ pagination.total }} 条</span>
+</header>
+
+{% if pagination.items %}
+  <div class="my-comments">
+    {% for comment in pagination.items %}
+      <article class="my-comment">
+        <div class="my-comment__head">
+          <div>
+            <span class="my-comment__label">评论于</span>
+            <a href="{{ url_for('main.post_detail', post_id=comment.post.id, _anchor='comments') }}">{{ comment.post.title }}</a>
+          </div>
+          {{ status_badge(comment.status) }}
+        </div>
+        <p>{{ comment.content }}</p>
+        <div class="my-comment__foot">
+          <span>{{ comment.created_at|datetime_cn('%Y-%m-%d %H:%M') }}</span>
+          {% if comment.status == 'pending' %}<span class="muted">审核通过后才会公开显示</span>{% endif %}
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+  {{ page_nav(pagination) }}
+{% else %}
+  {{ empty_state('还没有留下评论', '在文章下方写下你的问题或补充，审核后会展示出来。', url_for('main.posts'), '去读文章') }}
+{% endif %}
+{% endblock %}

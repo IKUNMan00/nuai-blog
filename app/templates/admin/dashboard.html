@@ -1,0 +1,152 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import icon, avatar, status_badge %}
+{% block title %}数据看板{% endblock %}
+
+{% block admin_content %}
+<header class="admin-page-head">
+  <div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> DASHBOARD</p>
+    <h1>数据看板</h1>
+    <p>小栈今天也在生长。这里汇总内容、访问与互动情况。</p>
+  </div>
+  <div class="admin-page-head__actions">
+    <a class="btn btn--ghost btn--sm" href="{{ url_for('main.index') }}" target="_blank" rel="noopener">{{ icon('arrow-up-right', 15) }} 查看前台</a>
+    <a class="btn btn--primary btn--sm" href="{{ url_for('admin.post_new') }}">{{ icon('plus', 16) }} 写新文章</a>
+  </div>
+</header>
+
+<section class="stat-grid">
+  <article class="stat-card">
+    <div class="stat-card__top"><span class="stat-card__icon stat-card__icon--green">{{ icon('notes', 20) }}</span><span class="stat-card__trend">+{{ published_count }} 已发布</span></div>
+    <strong class="stat-card__value">{{ total_posts }}</strong>
+    <span class="stat-card__label">全部文章</span>
+    <div class="stat-card__foot"><span>草稿 {{ draft_count }} 篇</span><a href="{{ url_for('admin.posts') }}">管理 {{ icon('arrow-right', 13) }}</a></div>
+  </article>
+  <article class="stat-card">
+    <div class="stat-card__top"><span class="stat-card__icon stat-card__icon--blue">{{ icon('eye', 20) }}</span><span class="stat-card__trend">{{ today_views }} 今日</span></div>
+    <strong class="stat-card__value">{{ total_views|number_cn }}</strong>
+    <span class="stat-card__label">累计阅读量</span>
+    <div class="stat-card__foot"><span>近 7 日 {{ week_views }} 次</span><span class="muted">按会话去重</span></div>
+  </article>
+  <article class="stat-card">
+    <div class="stat-card__top"><span class="stat-card__icon stat-card__icon--orange">{{ icon('message', 20) }}</span><span class="stat-card__trend">{{ total_comments }} 总评论</span></div>
+    <strong class="stat-card__value">{{ pending_comments }}</strong>
+    <span class="stat-card__label">待审核评论</span>
+    <div class="stat-card__foot"><span>审核后才会公开展示</span><a href="{{ url_for('admin.comments') }}">去审核 {{ icon('arrow-right', 13) }}</a></div>
+  </article>
+  <article class="stat-card">
+    <div class="stat-card__top"><span class="stat-card__icon stat-card__icon--purple">{{ icon('bookmark', 20) }}</span><span class="stat-card__trend">{{ reader_count }} 位读者</span></div>
+    <strong class="stat-card__value">{{ total_favorites }}</strong>
+    <span class="stat-card__label">文章被收藏次数</span>
+    <div class="stat-card__foot"><span>收藏是内容价值的信号</span><span class="muted">实时统计</span></div>
+  </article>
+</section>
+
+<div class="dashboard-grid">
+  <section class="panel panel--chart">
+    <div class="panel__head">
+      <div>
+        <p class="eyebrow">TRAFFIC · LAST 7 DAYS</p>
+        <h2>访问趋势</h2>
+      </div>
+      <span class="panel__badge">{{ chart_total }} 次浏览</span>
+    </div>
+    <div class="bar-chart" role="img" aria-label="近 7 日访问量柱状图">
+      {% for item in chart %}
+        <div class="bar-chart__col">
+          <span class="bar-chart__value">{{ item.value }}</span>
+          <div class="bar-chart__track"><span class="bar-chart__bar" style="--bar-height: {{ item.height }}%"></span></div>
+          <span class="bar-chart__label">{{ item.label }}<small>周{{ item.weekday }}</small></span>
+        </div>
+      {% endfor %}
+    </div>
+    <p class="panel__note">{{ icon('eye', 14) }} 浏览明细在文章详情页按“同一会话同一篇只计一次”记录，管理员预览不计入。</p>
+  </section>
+
+  <section class="panel">
+    <div class="panel__head">
+      <div>
+        <p class="eyebrow">CONTENT MIX</p>
+        <h2>分类分布</h2>
+      </div>
+    </div>
+    <div class="donut-layout">
+      <div class="donut" style="--segments: {% for item in category_chart %}{{ item.color }} {{ item.percent }}%{% if not loop.last %}, {% endif %}{% endfor %};">
+        <div class="donut__hole"><strong>{{ published_count }}</strong><span>篇已发布</span></div>
+      </div>
+      <div class="legend">
+        {% for item in category_chart %}
+          <div class="legend__row">
+            <span class="legend__dot" style="--dot: {{ item.color }}"></span>
+            <span class="legend__name">{{ item.name }}</span>
+            <strong>{{ item.count }}</strong>
+            <small>{{ item.percent }}%</small>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="dashboard-grid dashboard-grid--lower">
+  <section class="panel">
+    <div class="panel__head">
+      <div>
+        <p class="eyebrow">TOP CONTENT</p>
+        <h2>热门文章</h2>
+      </div>
+      <a class="text-link text-link--small" href="{{ url_for('admin.posts') }}">全部文章</a>
+    </div>
+    <div class="mini-table">
+      {% for post in top_posts %}
+        <div class="mini-table__row">
+          <span class="mini-table__rank">{{ loop.index }}</span>
+          <div class="mini-table__main">
+            <a href="{{ url_for('main.post_detail', post_id=post.id) }}" target="_blank" rel="noopener">{{ post.title }}</a>
+            <span>{{ post.category.name if post.category else '未分类' }} · {{ post.published_at|datetime_cn if post.published_at else '未发布' }}</span>
+          </div>
+          <span class="mini-table__num">{{ post.view_count|number_cn }} 阅读</span>
+        </div>
+      {% else %}
+        <p class="muted">暂无已发布文章。</p>
+      {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel__head">
+      <div>
+        <p class="eyebrow">RECENT ACTIVITY</p>
+        <h2>最新动态</h2>
+      </div>
+      <a class="text-link text-link--small" href="{{ url_for('admin.comments') }}">评论审核</a>
+    </div>
+    <div class="activity-list">
+      {% for comment in recent_comments %}
+        <div class="activity">
+          {{ avatar(comment.user, name=comment.display_name, size='sm') }}
+          <div class="activity__body">
+            <p><strong>{{ comment.display_name }}</strong> 评论了《<a href="{{ url_for('admin.comments', status=comment.status) }}">{{ comment.post.title|truncate(24) }}</a>》</p>
+            <span>{{ comment.created_at|datetime_cn('%m月%d日 %H:%M') }} · {{ comment.status_label }}</span>
+          </div>
+          {{ status_badge(comment.status) }}
+        </div>
+      {% else %}
+        <p class="muted">暂无评论。</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+
+<section class="panel panel--quick">
+  <div class="panel__head">
+    <div><p class="eyebrow">QUICK START</p><h2>接下来做什么？</h2></div>
+  </div>
+  <div class="quick-grid">
+    <a class="quick-card" href="{{ url_for('admin.post_new') }}"><span>{{ icon('edit', 21) }}</span><strong>写一篇新笔记</strong><p>把刚学到的东西整理成可复用的文章。</p></a>
+    <a class="quick-card" href="{{ url_for('admin.comments', status='pending') }}"><span>{{ icon('message', 21) }}</span><strong>审核待处理评论</strong><p>当前有 {{ pending_comments }} 条评论等待审核。</p></a>
+    <a class="quick-card" href="{{ url_for('admin.categories') }}"><span>{{ icon('folder', 21) }}</span><strong>整理分类与标签</strong><p>让知识之间的连接更清楚。</p></a>
+    <a class="quick-card" href="{{ url_for('admin.attachments') }}"><span>{{ icon('image', 21) }}</span><strong>管理图片附件</strong><p>查看已上传图片，复制 Markdown 链接。</p></a>
+  </div>
+</section>
+{% endblock %}

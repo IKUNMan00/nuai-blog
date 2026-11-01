@@ -1,0 +1,220 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, post_card, avatar, empty_state %}
+{% block title %}首页{% endblock %}
+{% block description %}{{ site_description }}{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero__grid">
+    <div class="hero__copy">
+      <p class="eyebrow"><span class="eyebrow__line"></span> PERSONAL KNOWLEDGE BASE · EST. 2026</p>
+      <h1>把零散的灵感，<br><em>收进一座会生长的小栈。</em></h1>
+      <p class="hero__lead">{{ site_description }}在这里，我记录代码、复盘项目，也收藏那些值得反复回看的小发现。</p>
+      <div class="hero__actions">
+        <a class="btn btn--primary" href="{{ url_for('main.posts') }}">开始阅读 {{ icon('arrow-right', 18) }}</a>
+        {% if current_user.is_authenticated and current_user.is_admin %}
+          <a class="btn btn--ghost" href="{{ url_for('admin.post_new') }}">{{ icon('edit', 17) }} 写一篇笔记</a>
+        {% else %}
+          <a class="btn btn--ghost" href="{{ url_for('main.about') }}">{{ icon('spark', 17) }} 认识小栈</a>
+        {% endif %}
+      </div>
+      <div class="hero__meta">
+        <div class="hero__avatars" aria-hidden="true">
+          <span class="avatar avatar--sm avatar--letter">阿</span>
+          <span class="avatar avatar--sm avatar--letter avatar--alt">读</span>
+          <span class="avatar avatar--sm avatar--letter avatar--third">客</span>
+        </div>
+        <p><strong>{{ stats.posts }}</strong> 篇公开笔记 · <strong>{{ stats.comments }}</strong> 条读者留言<br><span>持续更新中，欢迎一起把知识用起来。</span></p>
+      </div>
+    </div>
+
+    <div class="hero__art" aria-label="知识小栈视觉插画">
+      <div class="hero__orb hero__orb--one"></div>
+      <div class="hero__orb hero__orb--two"></div>
+      <div class="hero__grid-lines" aria-hidden="true"></div>
+
+      <article class="stack-card stack-card--main">
+        <div class="stack-card__top">
+          <span class="window-dots"><i></i><i></i><i></i></span>
+          <span class="stack-card__label">今日置顶笔记</span>
+          <span class="stack-card__spark">{{ icon('spark', 15) }}</span>
+        </div>
+        {% if hero %}
+          <p class="stack-card__kicker">{{ hero.category.name if hero.category else '知识小栈' }}</p>
+          <h2>{{ hero.title }}</h2>
+          <p>{{ hero.summary }}</p>
+          <div class="stack-card__tags">
+            {% for tag in hero.tags[:3] %}<span>#{{ tag.name }}</span>{% endfor %}
+          </div>
+          <a class="stack-card__link" href="{{ url_for('main.post_detail', post_id=hero.id) }}">打开这条笔记 {{ icon('arrow-up-right', 15) }}</a>
+        {% else %}
+          <h2>小栈正在等待第一条笔记。</h2>
+          <p>登录博主账号，写下你的第一篇知识笔记。</p>
+        {% endif %}
+      </article>
+
+      <div class="stack-card stack-card--code" aria-hidden="true">
+        <div class="code-card__bar"><span>knowledge.py</span><span>Python</span></div>
+        <pre><code><span class="code-pink">def</span> <span class="code-green">grow</span>(idea):
+    note = capture(idea)
+    <span class="code-pink">return</span> share(note)</code></pre>
+        <span class="code-card__status"><i></i> saved</span>
+      </div>
+
+      <div class="stack-card stack-card--stat" aria-hidden="true">
+        <span class="stat-card__icon">{{ icon('chart', 17) }}</span>
+        <div><strong>{{ stats.views|number_cn }}</strong><span>累计阅读</span></div>
+        <div class="mini-bars"><i style="--h:36%"></i><i style="--h:52%"></i><i style="--h:44%"></i><i style="--h:78%"></i><i style="--h:100%"></i></div>
+      </div>
+
+      <span class="floating-tag floating-tag--one"># 持续输出</span>
+      <span class="floating-tag floating-tag--two"># 项目复盘</span>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="hero-stats">
+      <div class="hero-stat"><span class="hero-stat__num">{{ stats.posts }}</span><span class="hero-stat__label">篇公开笔记</span></div>
+      <div class="hero-stat"><span class="hero-stat__num">{{ stats.views|number_cn }}</span><span class="hero-stat__label">次阅读</span></div>
+      <div class="hero-stat"><span class="hero-stat__num">{{ stats.comments }}</span><span class="hero-stat__label">条通过审核的评论</span></div>
+      <div class="hero-stat"><span class="hero-stat__num">{{ stats.favorites }}</span><span class="hero-stat__label">次被收藏</span></div>
+      <div class="hero-stat hero-stat--note"><span>{{ icon('notes', 16) }} 本周主题</span><strong>把项目讲清楚</strong></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow"><span class="eyebrow__line"></span> LATEST NOTES</p>
+        <h2>最近写下的</h2>
+      </div>
+      <a class="text-link" href="{{ url_for('main.posts') }}">查看全部 {{ icon('arrow-right', 16) }}</a>
+    </div>
+
+    {% if latest_posts %}
+      <div class="post-grid">
+        {% for post in latest_posts %}
+          {{ post_card(post) }}
+        {% endfor %}
+      </div>
+    {% else %}
+      {{ empty_state('还没有公开文章', '登录博主账号后，发布第一篇文章吧。', url_for('auth.login'), '去登录') }}
+    {% endif %}
+  </div>
+</section>
+
+<section class="section section--tint">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow"><span class="eyebrow__line"></span> EXPLORE BY TOPIC</p>
+        <h2>沿着分类，慢慢逛</h2>
+      </div>
+      <p class="section-head__note">每一类都是一条持续生长的学习线索。</p>
+    </div>
+    <div class="category-grid">
+      {% for category, count in category_rows %}
+        <a class="category-card" href="{{ url_for('main.category_filter', category_id=category.id) }}" style="--accent: {{ category.color }}">
+          <span class="category-card__icon">{{ icon('folder', 20) }}</span>
+          <span class="category-card__count">{{ count }} 篇</span>
+          <h3>{{ category.name }}</h3>
+          <p>{{ category.description or '这一类还在慢慢补充。' }}</p>
+          <span class="category-card__link">浏览分类 {{ icon('arrow-right', 14) }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container split-layout">
+    <div class="popular-panel">
+      <div class="section-head section-head--compact">
+        <div>
+          <p class="eyebrow"><span class="eyebrow__line"></span> MOST READ</p>
+          <h2>被读得最多的</h2>
+        </div>
+      </div>
+      <div class="popular-list">
+        {% for post in popular_posts %}
+          <a class="popular-item" href="{{ url_for('main.post_detail', post_id=post.id) }}">
+            <span class="popular-item__index">{{ '%02d'|format(loop.index) }}</span>
+            <span class="popular-item__body">
+              <strong>{{ post.title }}</strong>
+              <span>{{ post.category.name if post.category else '未分类' }} · {{ post.view_count|number_cn }} 次阅读</span>
+            </span>
+            <span class="popular-item__arrow">{{ icon('arrow-up-right', 17) }}</span>
+          </a>
+        {% else %}
+          <p class="muted">暂无阅读数据。</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <aside class="about-panel">
+      <div class="about-panel__head">
+        {{ avatar(author, size='lg') }}
+        <div>
+          <p class="eyebrow">ABOUT THE KEEPER</p>
+          <h2>{{ author.display_name if author else site_author }}</h2>
+          <span>小栈博主 · 软件工程学生</span>
+        </div>
+      </div>
+      <p class="about-panel__bio">{{ author.bio if author and author.bio else '把学习过程写下来，让经验可以被复用。' }}</p>
+      <div class="about-panel__numbers">
+        <div><strong>{{ stats.posts }}</strong><span>笔记</span></div>
+        <div><strong>{{ category_rows|length }}</strong><span>分类</span></div>
+        <div><strong>{{ tag_rows|length }}</strong><span>标签</span></div>
+      </div>
+      <a class="btn btn--soft btn--block" href="{{ url_for('main.about') }}">了解更多 {{ icon('arrow-right', 15) }}</a>
+      <blockquote class="about-panel__quote">“写下来，才算真正想明白。”</blockquote>
+    </aside>
+  </div>
+</section>
+
+<section class="section section--tags">
+  <div class="container tag-cloud-panel">
+    <div>
+      <p class="eyebrow"><span class="eyebrow__line"></span> TAG CLOUD</p>
+      <h2>从标签出发</h2>
+      <p class="muted">一些反复出现的关键词，串起了这座小栈的脉络。</p>
+    </div>
+    <div class="tag-cloud">
+      {% for tag, count in tag_rows %}
+        <a class="tag-pill" href="{{ url_for('main.tag_filter', tag_id=tag.id) }}" style="--tag-color: {{ tag.color }}">
+          <span>#</span>{{ tag.name }}<small>{{ count }}</small>
+        </a>
+      {% else %}
+        <span class="muted">还没有标签。</span>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta-panel">
+      <div class="cta-panel__copy">
+        <p class="eyebrow eyebrow--light">KEEP GROWING</p>
+        <h2>知识不是收藏，<br>是下一次行动的起点。</h2>
+        <p>注册一个读者账号，收藏想反复读的文章，留下你的问题与补充。每一条留言都会经过审核后展示。</p>
+        <div class="cta-panel__actions">
+          {% if current_user.is_authenticated %}
+            <a class="btn btn--light" href="{{ url_for('account.favorites') }}">打开我的收藏 {{ icon('bookmark', 16) }}</a>
+          {% else %}
+            <a class="btn btn--light" href="{{ url_for('auth.register') }}">注册读者账号 {{ icon('arrow-right', 16) }}</a>
+            <a class="btn btn--outline-light" href="{{ url_for('auth.login') }}">已有账号，登录</a>
+          {% endif %}
+        </div>
+      </div>
+      <div class="cta-panel__art" aria-hidden="true">
+        <span class="cta-stack cta-stack--back"></span>
+        <span class="cta-stack cta-stack--mid"></span>
+        <span class="cta-stack cta-stack--front">{{ icon('stack', 44) }}<small>MY<br>STACK</small></span>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, avatar, status_badge %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block description %}{{ post.summary or site_description }}{% endblock %}
+
+{% block content %}
+<article class="article-page">
+  <div class="container article-layout">
+    <div class="article-main">
+      <nav class="breadcrumb" aria-label="面包屑">
+        <a href="{{ url_for('main.index') }}">首页</a><span>/</span>
+        <a href="{{ url_for('main.posts') }}">文章</a><span>/</span>
+        {% if post.category %}<a href="{{ url_for('main.category_filter', category_id=post.category.id) }}">{{ post.category.name }}</a>{% else %}<span>未分类</span>{% endif %}
+      </nav>
+
+      {% if post.status != 'published' %}
+        <div class="draft-banner">
+          {{ icon('eye', 18) }}
+          <div><strong>草稿预览</strong><span>这篇文章尚未发布，只有登录的博主可以看到。</span></div>
+          <a class="btn btn--soft btn--sm" href="{{ url_for('admin.post_edit', post_id=post.id) }}">继续编辑</a>
+        </div>
+      {% endif %}
+
+      <header class="article-header">
+        <div class="article-header__kicker">
+          {% if post.category %}
+            <a class="chip chip--category" href="{{ url_for('main.category_filter', category_id=post.category.id) }}" style="--chip-color: {{ post.category.color }}">{{ post.category.name }}</a>
+          {% endif %}
+          {% if post.is_top %}<span class="chip chip--warm">{{ icon('pin', 12) }} 置顶</span>{% endif %}
+        </div>
+        <h1>{{ post.title }}</h1>
+        {% if post.summary %}<p class="article-header__summary">{{ post.summary }}</p>{% endif %}
+        <div class="article-meta">
+          <div class="article-meta__author">
+            {{ avatar(post.author, size='sm') }}
+            <div><strong>{{ post.author.display_name }}</strong><span>博主</span></div>
+          </div>
+          <span class="article-meta__item">{{ icon('clock', 14) }}{{ post.published_at|datetime_cn if post.published_at else post.updated_at|datetime_cn }}</span>
+          <span class="article-meta__item">{{ icon('eye', 14) }}{{ post.view_count }} 次阅读</span>
+          <span class="article-meta__item">{{ icon('notes', 14) }}{{ post.reading_minutes }} 分钟读完</span>
+        </div>
+      </header>
+
+      {% if post.cover_image %}
+        <figure class="article-cover">
+          <img src="{{ post.cover_image }}" alt="{{ post.title }}的封面" width="1200" height="675">
+        </figure>
+      {% endif %}
+
+      <div class="prose" id="article-content">
+        {{ post.content_html|safe }}
+      </div>
+
+      <div class="article-footer">
+        <div class="article-tags">
+          <span class="article-tags__label">{{ icon('tag', 15) }} 标签</span>
+          {% for tag in post.tags %}
+            <a class="tag-pill tag-pill--sm" href="{{ url_for('main.tag_filter', tag_id=tag.id) }}" style="--tag-color: {{ tag.color }}"><span>#</span>{{ tag.name }}</a>
+          {% else %}
+            <span class="muted">暂无标签</span>
+          {% endfor %}
+        </div>
+        <div class="article-actions">
+          {% if current_user.is_authenticated %}
+            <form method="post" action="{{ url_for('main.toggle_favorite', post_id=post.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn--soft btn--sm {% if favorited %}is-favorited{% endif %}" type="submit">
+                {{ icon('bookmark', 16) }} {{ '已收藏' if favorited else '收藏文章' }} <span class="btn__count">{{ favorite_count }}</span>
+              </button>
+            </form>
+          {% else %}
+            <a class="btn btn--soft btn--sm" href="{{ url_for('auth.login', next=request.path) }}">{{ icon('bookmark', 16) }} 登录后收藏 <span class="btn__count">{{ favorite_count }}</span></a>
+          {% endif %}
+          <button class="btn btn--ghost btn--sm" type="button" data-copy-current>{{ icon('link', 16) }} 复制链接</button>
+          {% if current_user.is_authenticated and current_user.is_admin %}
+            <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.post_edit', post_id=post.id) }}">{{ icon('edit', 16) }} 编辑</a>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="author-card">
+        <div class="author-card__avatar">{{ avatar(post.author, size='lg') }}</div>
+        <div class="author-card__body">
+          <p class="eyebrow">WRITTEN BY</p>
+          <h2>{{ post.author.display_name }}</h2>
+          <p>{{ post.author.bio or '把学习过程写下来，让经验可以被复用。' }}</p>
+        </div>
+        <a class="btn btn--ghost btn--sm" href="{{ url_for('main.about') }}">关于博主</a>
+      </div>
+
+      <nav class="post-neighbors" aria-label="上一篇与下一篇">
+        {% if prev_post %}
+          <a class="neighbor neighbor--prev" href="{{ url_for('main.post_detail', post_id=prev_post.id) }}">
+            <span>{{ icon('arrow-left', 15) }} 上一篇</span>
+            <strong>{{ prev_post.title }}</strong>
+          </a>
+        {% else %}
+          <span class="neighbor neighbor--empty"></span>
+        {% endif %}
+        {% if next_post %}
+          <a class="neighbor neighbor--next" href="{{ url_for('main.post_detail', post_id=next_post.id) }}">
+            <span>下一篇 {{ icon('arrow-right', 15) }}</span>
+            <strong>{{ next_post.title }}</strong>
+          </a>
+        {% endif %}
+      </nav>
+
+      <section class="comments" id="comments">
+        <div class="comments__head">
+          <div>
+            <p class="eyebrow"><span class="eyebrow__line"></span> DISCUSSION</p>
+            <h2>读者留言 <span>{{ comments.total }}</span></h2>
+          </div>
+          <a class="btn btn--soft btn--sm" href="#comment-form">{{ icon('message', 16) }} 写下留言</a>
+        </div>
+
+        <div class="comment-list">
+          {% for comment in comments.items %}
+            <article class="comment">
+              <div class="comment__avatar">{{ avatar(comment.user, name=comment.display_name, size='md') }}</div>
+              <div class="comment__body">
+                <div class="comment__meta">
+                  <strong>{{ comment.display_name }}</strong>
+                  {% if comment.user and comment.user.is_admin %}<span class="comment__badge">博主</span>{% endif %}
+                  {% if not comment.user %}<span class="comment__guest">访客</span>{% endif %}
+                  <time datetime="{{ comment.created_at.isoformat() }}">{{ comment.created_at|datetime_cn }}</time>
+                </div>
+                <p class="comment__content">{{ comment.content }}</p>
+              </div>
+            </article>
+          {% else %}
+            <div class="comments__empty">
+              {{ icon('message', 26) }}
+              <p>还没有留言。说说你的想法，或补充一个不同的角度。</p>
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if comments.pages > 1 %}
+          <nav class="comment-pagination" aria-label="评论分页">
+            {% if comments.has_prev %}<a href="{{ url_for('main.post_detail', post_id=post.id, cpage=comments.prev_num, _anchor='comments') }}">{{ icon('arrow-left', 14) }} 新一些的留言</a>{% endif %}
+            <span>第 {{ comments.page }} / {{ comments.pages }} 页</span>
+            {% if comments.has_next %}<a href="{{ url_for('main.post_detail', post_id=post.id, cpage=comments.next_num, _anchor='comments') }}">更早的留言 {{ icon('arrow-right', 14) }}</a>{% endif %}
+          </nav>
+        {% endif %}
+
+        <div class="comment-form-card" id="comment-form">
+          <div class="comment-form-card__head">
+            <h3>留下你的问题或补充</h3>
+            <p>评论会先进入审核队列，通过后展示。请保持友善、具体。</p>
+          </div>
+          {% if current_user.is_authenticated %}
+            <div class="comment-as">
+              {{ avatar(current_user, size='sm') }}
+              <span>以 <strong>{{ current_user.display_name }}</strong> 的身份留言</span>
+            </div>
+          {% endif %}
+          <form method="post" action="{{ url_for('main.comment_create', post_id=post.id) }}" class="comment-form">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="honeypot" aria-hidden="true">
+              <label>网址 <input type="text" name="website" tabindex="-1" autocomplete="off"></label>
+            </div>
+            {% if not current_user.is_authenticated %}
+              <div class="form-row form-row--two">
+                <div class="field">
+                  <label for="guest-name">昵称 <span>*</span></label>
+                  <input id="guest-name" type="text" name="guest_name" maxlength="20" required placeholder="怎么称呼你？">
+                </div>
+                <div class="field">
+                  <label for="guest-email">邮箱 <small>可选，不会公开</small></label>
+                  <input id="guest-email" type="email" name="guest_email" maxlength="120" placeholder="用于识别你的留言">
+                </div>
+              </div>
+            {% endif %}
+            <div class="field">
+              <label for="comment-content">留言内容 <span>*</span></label>
+              <textarea id="comment-content" name="content" rows="5" minlength="2" maxlength="800" required placeholder="写下你的问题、补充或不同看法…"></textarea>
+              <div class="field__hint"><span>支持纯文本，2–800 字</span><span data-char-count-for="comment-content">0 / 800</span></div>
+            </div>
+            <div class="form-actions">
+              <span class="form-note">{{ icon('lock', 14) }} 评论审核后公开</span>
+              <button class="btn btn--primary" type="submit">提交留言 {{ icon('arrow-right', 16) }}</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+
+    <aside class="article-sidebar">
+      <div class="sidebar-card sidebar-card--toc" data-toc>
+        <p class="sidebar-card__title">{{ icon('notes', 14) }} 本文目录</p>
+        <nav class="toc" data-toc-nav aria-label="文章目录">
+          <p class="toc__empty">正文暂无可提取的小标题。</p>
+        </nav>
+      </div>
+
+      {% if related %}
+        <div class="sidebar-card">
+          <p class="sidebar-card__title">{{ icon('folder', 14) }} 同类笔记</p>
+          <div class="sidebar-related">
+            {% for item in related %}
+              <a href="{{ url_for('main.post_detail', post_id=item.id) }}">
+                <span>{{ item.published_at|datetime_cn('%m.%d') }}</span>
+                <strong>{{ item.title }}</strong>
+              </a>
+            {% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="sidebar-card sidebar-card--note">
+        <span class="sidebar-card__stamp">{{ icon('spark', 18) }}</span>
+        <p>“如果这篇笔记对你有帮助，收藏它，或在评论里补充一个更好的做法。”</p>
+        <a class="text-link" href="{{ url_for('main.posts') }}">继续逛小栈 {{ icon('arrow-right', 14) }}</a>
+      </div>
+    </aside>
+  </div>
+</article>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  // 根据正文 h2/h3 自动生成目录，无标题时显示空状态
+  (function () {
+    const content = document.querySelector("#article-content");
+    const nav = document.querySelector("[data-toc-nav]");
+    const box = document.querySelector("[data-toc]");
+    if (!content || !nav || !box) return;
+    const headings = Array.from(content.querySelectorAll("h2, h3"));
+    if (!headings.length) return;
+    nav.innerHTML = "";
+    headings.forEach(function (heading, index) {
+      if (!heading.id) heading.id = "section-" + (index + 1);
+      const link = document.createElement("a");
+      link.href = "#" + heading.id;
+      link.textContent = heading.textContent;
+      if (heading.tagName === "H3") link.className = "toc__sub";
+      nav.appendChild(link);
+    });
+    const empty = nav.querySelector(".toc__empty");
+    if (empty) empty.remove();
+  })();
+</script>
+{% endblock %}

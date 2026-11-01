@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}登录{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="container auth-shell">
+  <section class="auth-panel">
+    <header class="auth-panel__head">
+      <p class="eyebrow"><span class="eyebrow__line"></span> WELCOME BACK</p>
+      <h1>回到小栈</h1>
+      <p>登录后可以收藏文章、管理留言，博主账号还可进入后台。</p>
+    </header>
+
+    <form class="auth-form" method="post" action="{{ url_for('auth.login') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      {% if request.args.get('next') %}<input type="hidden" name="next" value="{{ request.args.get('next') }}">{% endif %}
+
+      <div class="field">
+        <label for="identifier">用户名或邮箱</label>
+        <div class="input-icon">
+          <span>{{ icon('user', 17) }}</span>
+          <input id="identifier" name="identifier" type="text" value="{{ identifier }}" required autofocus autocomplete="username" placeholder="请输入用户名或邮箱">
+        </div>
+      </div>
+
+      <div class="field">
+        <div class="field__label-row">
+          <label for="password">密码</label>
+          <span class="field__hint">至少 8 位</span>
+        </div>
+        <div class="input-icon input-icon--action">
+          <span>{{ icon('lock', 17) }}</span>
+          <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="请输入密码">
+          <button class="input-action" type="button" data-password-toggle="#password" aria-label="显示密码">{{ icon('eye', 17) }}</button>
+        </div>
+      </div>
+
+      <div class="auth-options">
+        <label class="checkbox">
+          <input type="checkbox" name="remember">
+          <span>记住我 14 天</span>
+        </label>
+        <a class="text-link text-link--small" href="{{ url_for('main.about') }}">忘记密码？</a>
+      </div>
+
+      <button class="btn btn--primary btn--block btn--lg" type="submit">登录 {{ icon('arrow-right', 18) }}</button>
+    </form>
+
+    <div class="auth-demo">
+      <div class="auth-demo__head">{{ icon('spark', 15) }} 课程演示账号</div>
+      <div class="auth-demo__rows">
+        <button type="button" class="demo-credential" data-fill-login data-username="admin" data-password="Admin@123">
+          <span><strong>博主管理员</strong><small>admin</small></span><code>Admin@123</code>
+        </button>
+        <button type="button" class="demo-credential" data-fill-login data-username="reader" data-password="Reader@123">
+          <span><strong>注册读者</strong><small>reader</small></span><code>Reader@123</code>
+        </button>
+      </div>
+      <p>点击上方账号可自动填入，仅供课堂演示。</p>
+    </div>
+
+    <p class="auth-switch">还没有账号？<a href="{{ url_for('auth.register') }}">注册一个读者账号</a></p>
+    <a class="auth-back" href="{{ url_for('main.index') }}">{{ icon('arrow-left', 15) }} 先随便逛逛</a>
+  </section>
+
+  <aside class="auth-visual">
+    <div class="auth-visual__grid"></div>
+    <span class="auth-visual__tag">MY KNOWLEDGE STACK</span>
+    <blockquote>“把零散的知识，<br>收进一座会生长的小栈。”</blockquote>
+    <div class="auth-note-stack" aria-hidden="true">
+      <div class="auth-note auth-note--back"><span>03</span><p>复盘不是流水账，<br>是下一次行动的清单。</p></div>
+      <div class="auth-note auth-note--mid"><span>02</span><p>先让项目跑起来，<br>再让它变得优雅。</p></div>
+      <div class="auth-note auth-note--front"><span>01</span><p>每一条笔记，<br>都应该回答一个真实问题。</p><small>— 小栈便签</small></div>
+    </div>
+    <div class="auth-visual__footer">
+      <span>{{ icon('stack', 18) }} EST. 2026</span>
+      <span>FLASK · MYSQL · VANILLA WEB</span>
+    </div>
+  </aside>
+</div>
+{% endblock %}

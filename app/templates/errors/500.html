@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}服务器开小差{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <div class="container error-page__inner">
+    <div class="error-code">500</div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> INTERNAL ERROR</p>
+    <h1>小栈暂时没能接住这个请求。</h1>
+    <p>服务器遇到了一个未预期的问题。请稍后重试；如果问题持续出现，可以联系博主。</p>
+    <div class="error-actions">
+      <a class="btn btn--primary" href="{{ url_for('main.index') }}">{{ icon('arrow-left', 16) }} 回到首页</a>
+      <a class="btn btn--ghost" href="{{ url_for('main.posts') }}">浏览文章</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

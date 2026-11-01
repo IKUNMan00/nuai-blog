@@ -1,0 +1,25 @@
+{% extends "account/base_account.html" %}
+{% from "_macros.html" import icon, post_card, page_nav, empty_state with context %}
+{% block title %}我的收藏{% endblock %}
+
+{% block account_content %}
+<header class="account-page-head">
+  <div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> SAVED NOTES</p>
+    <h1>我的收藏</h1>
+    <p>那些值得反复读的笔记，都在这里。</p>
+  </div>
+  <span class="account-page-head__badge">{{ pagination.total }} 篇</span>
+</header>
+
+{% if pagination.items %}
+  <div class="post-grid post-grid--account">
+    {% for favorite in pagination.items %}
+      {{ post_card(favorite.post) }}
+    {% endfor %}
+  </div>
+  {{ page_nav(pagination) }}
+{% else %}
+  {{ empty_state('收藏夹还是空的', '读到喜欢的文章时，点击「收藏文章」就会出现在这里。', url_for('main.posts'), '去逛逛文章') }}
+{% endif %}
+{% endblock %}

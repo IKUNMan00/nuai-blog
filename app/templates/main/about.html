@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon, avatar %}
+{% block title %}关于小栈{% endblock %}
+{% block description %}关于{{ site_name }}：为什么记录、记录什么，以及这座小栈的搭建方式。{% endblock %}
+
+{% block content %}
+<section class="about-hero">
+  <div class="container about-hero__grid">
+    <div class="about-hero__copy">
+      <p class="eyebrow"><span class="eyebrow__line"></span> ABOUT THE STACK</p>
+      <h1>一座由笔记搭起来的<br><em>个人知识小栈。</em></h1>
+      <p>{{ site_description }}它既是课程项目，也是一个真正会被使用的学习工具。</p>
+      <div class="about-hero__tags">
+        <span>Flask</span><span>MySQL 8.0</span><span>原生前端</span><span>Markdown</span>
+      </div>
+    </div>
+    <div class="about-portrait">
+      <div class="about-portrait__ring"></div>
+      {{ avatar(author, size='xl') }}
+      <div class="about-portrait__label">
+        <strong>{{ author.display_name if author else site_author }}</strong>
+        <span>小栈博主 · 软件工程学生</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container about-grid">
+    <div class="about-story">
+      <p class="eyebrow"><span class="eyebrow__line"></span> WHY THIS STACK</p>
+      <h2>为什么造一座小栈？</h2>
+      <p>学习编程的过程中，我收集了很多资料，却常常在真正需要时找不到答案。于是我决定做一个属于自己的知识入口：把课堂笔记、项目踩坑、读书摘录和技术复盘放在同一处，用分类和标签建立连接，用搜索和收藏让它们随时可以被调用。</p>
+      <p>「小栈」不是一座宏大的图书馆。它更像路边的一间木屋，东西不多，但每一件都经过整理，知道放在哪里，也知道什么时候该用。</p>
+      <blockquote>“把每一次踩坑，写成下一次的捷径。”</blockquote>
+      <h3>这里会写什么</h3>
+      <ul class="check-list">
+        <li>{{ icon('check', 16) }} Flask / Python / MySQL 的学习笔记与源码拆解</li>
+        <li>{{ icon('check', 16) }} 课程项目从需求到部署的完整复盘</li>
+        <li>{{ icon('check', 16) }} 前端交互与 CSS 设计细节</li>
+        <li>{{ icon('check', 16) }} 关于学习方法、效率与成长的阶段性思考</li>
+      </ul>
+    </div>
+
+    <aside class="about-facts">
+      <div class="fact-card">
+        <p class="eyebrow">STACK IN NUMBERS</p>
+        <div class="fact-card__row"><strong>{{ stats.posts }}</strong><span>篇公开笔记</span></div>
+        <div class="fact-card__row"><strong>{{ stats.views|number_cn }}</strong><span>累计阅读</span></div>
+        <div class="fact-card__row"><strong>{{ stats.comments }}</strong><span>条公开留言</span></div>
+        <div class="fact-card__row"><strong>{{ categories|length }}</strong><span>个知识分类</span></div>
+      </div>
+      <div class="fact-card fact-card--tech">
+        <p class="eyebrow">BUILT WITH</p>
+        <div class="tech-list">
+          <span><i style="--dot:#1f6f5c"></i> Flask 3 / Python 3.12</span>
+          <span><i style="--dot:#0f766e"></i> MySQL 8.0 / SQLAlchemy</span>
+          <span><i style="--dot:#c96f3b"></i> 原生 HTML / CSS / JS</span>
+          <span><i style="--dot:#3b6ea8"></i> Markdown / Bleach</span>
+          <span><i style="--dot:#8b5cf6"></i> Gunicorn / Docker</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="section section--tint">
+  <div class="container">
+    <div class="section-head">
+      <div>
+        <p class="eyebrow"><span class="eyebrow__line"></span> TIMELINE</p>
+        <h2>小栈是怎么长出来的</h2>
+      </div>
+    </div>
+    <div class="timeline">
+      <div class="timeline__item">
+        <span class="timeline__dot"></span>
+        <time>第 1 周</time>
+        <h3>选题与需求</h3>
+        <p>确定「个人博客 / 笔记管理」题目，拆分主体功能与扩展功能，完成需求文档。</p>
+      </div>
+      <div class="timeline__item">
+        <span class="timeline__dot"></span>
+        <time>第 2 周</time>
+        <h3>数据库与原型</h3>
+        <p>完成 ER 图、9 张数据表和建表 SQL，确定页面地图与统一设计变量。</p>
+      </div>
+      <div class="timeline__item">
+        <span class="timeline__dot"></span>
+        <time>第 3 周</time>
+        <h3>前后端实现</h3>
+        <p>Flask 蓝图、登录鉴权、文章 CRUD、Markdown 编辑器、评论审核与收藏。</p>
+      </div>
+      <div class="timeline__item">
+        <span class="timeline__dot"></span>
+        <time>第 4 周</time>
+        <h3>测试与部署</h3>
+        <p>接口测试、权限测试、Docker 部署、数据看板与路演材料整理。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="cta-panel cta-panel--simple">
+      <div class="cta-panel__copy">
+        <p class="eyebrow eyebrow--light">SAY HELLO</p>
+        <h2>有想聊的问题？<br>去最新文章下面留言吧。</h2>
+        <p>每条留言都会认真阅读。如果是文章里的错误，也欢迎直接指出。</p>
+        <div class="cta-panel__actions">
+          <a class="btn btn--light" href="{{ url_for('main.posts') }}">去读文章 {{ icon('arrow-right', 16) }}</a>
+        </div>
+      </div>
+      <div class="cta-panel__art cta-panel__art--simple" aria-hidden="true">
+        <span class="cta-mail">{{ icon('mail', 38) }}</span>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

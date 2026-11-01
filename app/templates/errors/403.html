@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}没有访问权限{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <div class="container error-page__inner">
+    <div class="error-code">403</div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> FORBIDDEN</p>
+    <h1>这扇门只对博主开放。</h1>
+    <p>当前账号没有访问这个页面的权限。后台管理仅限博主管理员，读者可以在账号中心查看收藏与评论。</p>
+    <div class="error-actions">
+      <a class="btn btn--primary" href="{{ url_for('main.index') }}">{{ icon('arrow-left', 16) }} 回到首页</a>
+      {% if current_user.is_authenticated %}
+        <a class="btn btn--ghost" href="{{ url_for('account.overview') }}">进入账号中心</a>
+      {% else %}
+        <a class="btn btn--ghost" href="{{ url_for('auth.login') }}">切换账号登录</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

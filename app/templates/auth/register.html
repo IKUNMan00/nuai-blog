@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}注册{% endblock %}
+{% block body_class %}auth-page{% endblock %}
+
+{% block content %}
+<div class="container auth-shell auth-shell--register">
+  <section class="auth-panel">
+    <header class="auth-panel__head">
+      <p class="eyebrow"><span class="eyebrow__line"></span> JOIN THE STACK</p>
+      <h1>成为小栈读者</h1>
+      <p>注册后可以收藏文章、参与评论。公开注册账号默认为读者，不具备后台管理权限。</p>
+    </header>
+
+    <form class="auth-form" method="post" action="{{ url_for('auth.register') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+      <div class="form-row form-row--two">
+        <div class="field">
+          <label for="username">用户名</label>
+          <input id="username" name="username" type="text" value="{{ form.username }}" required minlength="3" maxlength="20" pattern="[A-Za-z0-9_]{3,20}" autocomplete="username" placeholder="字母、数字、下划线">
+          <span class="field__hint">3–20 位，登录时使用</span>
+        </div>
+        <div class="field">
+          <label for="display_name">昵称</label>
+          <input id="display_name" name="display_name" type="text" value="{{ form.display_name }}" required minlength="2" maxlength="20" placeholder="留言时展示的名字">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email">邮箱</label>
+        <div class="input-icon">
+          <span>{{ icon('mail', 17) }}</span>
+          <input id="email" name="email" type="email" value="{{ form.email }}" required maxlength="120" autocomplete="email" placeholder="you@example.com">
+        </div>
+        <span class="field__hint">仅用于账号识别，不会公开显示。</span>
+      </div>
+
+      <div class="form-row form-row--two">
+        <div class="field">
+          <label for="password">密码</label>
+          <div class="input-icon input-icon--action">
+            <span>{{ icon('lock', 17) }}</span>
+            <input id="password" name="password" type="password" required minlength="8" autocomplete="new-password" placeholder="至少 8 位">
+            <button class="input-action" type="button" data-password-toggle="#password" aria-label="显示密码">{{ icon('eye', 17) }}</button>
+          </div>
+          <span class="field__hint">需同时包含字母和数字</span>
+        </div>
+        <div class="field">
+          <label for="confirm_password">确认密码</label>
+          <div class="input-icon">
+            <span>{{ icon('lock', 17) }}</span>
+            <input id="confirm_password" name="confirm_password" type="password" required minlength="8" autocomplete="new-password" placeholder="再次输入密码">
+          </div>
+        </div>
+      </div>
+
+      <label class="checkbox checkbox--terms">
+        <input type="checkbox" required>
+        <span>我已阅读并同意本站仅将信息用于课程项目演示，不发布违法或侵权内容。</span>
+      </label>
+
+      <button class="btn btn--primary btn--block btn--lg" type="submit">创建读者账号 {{ icon('arrow-right', 18) }}</button>
+    </form>
+
+    <div class="role-note">
+      <span class="role-note__icon">{{ icon('user', 19) }}</span>
+      <div><strong>关于账号角色</strong><p>博主管理员账号由项目初始化脚本创建；普通注册用户为读者，可收藏与评论。这样既保留了公开注册流程，也避免后台权限被随意获取。</p></div>
+    </div>
+
+    <p class="auth-switch">已经有账号？<a href="{{ url_for('auth.login') }}">直接登录</a></p>
+    <a class="auth-back" href="{{ url_for('main.index') }}">{{ icon('arrow-left', 15) }} 返回首页</a>
+  </section>
+
+  <aside class="auth-visual auth-visual--register">
+    <div class="auth-visual__grid"></div>
+    <span class="auth-visual__tag">A PLACE TO KEEP IDEAS</span>
+    <blockquote>“先收藏，<br>再把它变成自己的。”</blockquote>
+    <div class="register-benefits">
+      <div class="benefit-card"><span>{{ icon('bookmark', 21) }}</span><div><strong>收藏好文章</strong><p>把想反复读的笔记放进自己的书架。</p></div></div>
+      <div class="benefit-card"><span>{{ icon('message', 21) }}</span><div><strong>留下问题与补充</strong><p>每条留言审核后公开，保持讨论质量。</p></div></div>
+      <div class="benefit-card"><span>{{ icon('notes', 21) }}</span><div><strong>持续获得更新</strong><p>文章会围绕项目与学习方法不断补充。</p></div></div>
+    </div>
+    <div class="auth-visual__footer">
+      <span>{{ icon('stack', 18) }} EST. 2026</span>
+      <span>READ · THINK · WRITE</span>
+    </div>
+  </aside>
+</div>
+{% endblock %}

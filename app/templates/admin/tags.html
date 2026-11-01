@@ -1,0 +1,75 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}标签管理{% endblock %}
+
+{% block admin_content %}
+<header class="admin-page-head">
+  <div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> TAXONOMY</p>
+    <h1>标签管理</h1>
+    <p>标签用来连接跨分类的相似主题，例如「复盘」「效率」「Flask」。</p>
+  </div>
+  <div class="admin-page-head__actions">
+    <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.categories') }}">{{ icon('folder', 15) }} 管理分类</a>
+  </div>
+</header>
+
+<div class="taxonomy-layout">
+  <section class="panel taxonomy-form-panel">
+    <div class="panel__head">
+      <div><p class="eyebrow">NEW TAG</p><h2>添加标签</h2></div>
+    </div>
+    <form class="stacked-form" method="post" action="{{ url_for('admin.tags') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="field">
+        <label for="name">标签名称 <span>*</span></label>
+        <input id="name" name="name" type="text" maxlength="50" required placeholder="例如：设计模式">
+        <span class="field__hint">建议不超过 10 个字，便于展示。</span>
+      </div>
+      <div class="field">
+        <label for="color">标签色</label>
+        <div class="color-input">
+          <input id="color" name="color" type="color" value="#64748b">
+          <span>用于标签胶囊</span>
+        </div>
+      </div>
+      <button class="btn btn--primary btn--block" type="submit">{{ icon('plus', 16) }} 添加标签</button>
+    </form>
+    <div class="panel-note">{{ icon('spark', 15) }} 在文章编辑页也可以直接输入新标签，系统会自动创建。</div>
+  </section>
+
+  <section class="panel">
+    <div class="panel__head">
+      <div><p class="eyebrow">TAG LIST</p><h2>现有标签 <span class="panel__count">{{ rows|length }}</span></h2></div>
+    </div>
+    <div class="tag-admin-grid">
+      {% for tag, count in rows %}
+        <div class="tag-admin-card">
+          <div class="tag-admin-card__top">
+            <a class="tag-pill" href="{{ url_for('main.tag_filter', tag_id=tag.id) }}" target="_blank" rel="noopener" style="--tag-color: {{ tag.color }}"><span>#</span>{{ tag.name }}</a>
+            <span class="tag-admin-card__count">{{ count }} 篇</span>
+          </div>
+          <div class="tag-admin-card__actions">
+            <button class="icon-action" type="button" data-toggle-edit="tag-edit-{{ tag.id }}" title="编辑" aria-label="编辑{{ tag.name }}" aria-expanded="false">{{ icon('edit', 16) }}</button>
+            <form method="post" action="{{ url_for('admin.tag_delete', tag_id=tag.id) }}" data-confirm="删除标签「{{ tag.name }}」？文章本身不会被删除。">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="icon-action icon-action--danger" type="submit" title="删除" aria-label="删除{{ tag.name }}">{{ icon('trash', 16) }}</button>
+            </form>
+          </div>
+          <div class="tag-admin-card__edit" id="tag-edit-{{ tag.id }}" hidden>
+            <form method="post" action="{{ url_for('admin.tag_edit', tag_id=tag.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input name="name" type="text" value="{{ tag.name }}" maxlength="50" required aria-label="标签名称">
+              <input name="color" type="color" value="{{ tag.color }}" aria-label="标签颜色">
+              <button class="btn btn--primary btn--sm" type="submit">保存</button>
+              <button class="btn btn--ghost btn--sm" type="button" data-toggle-edit="tag-edit-{{ tag.id }}">取消</button>
+            </form>
+          </div>
+        </div>
+      {% else %}
+        <p class="muted">还没有标签。</p>
+      {% endfor %}
+    </div>
+  </section>
+</div>
+{% endblock %}

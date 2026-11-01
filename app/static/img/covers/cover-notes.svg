@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" role="img" aria-label="米色笔记主题封面">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f7f4e9"/>
+      <stop offset="1" stop-color="#e8e2cf"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2f7d67"/>
+      <stop offset="1" stop-color="#1d4d42"/>
+    </linearGradient>
+    <pattern id="ruled" width="100" height="42" patternUnits="userSpaceOnUse">
+      <path d="M0 42h100" stroke="#1f6f5c" stroke-opacity=".07"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="675" fill="url(#bg)"/>
+  <rect width="1200" height="675" fill="url(#ruled)"/>
+  <path d="M0 560c190-95 330 76 540 12s336-130 660-18v121H0Z" fill="#1f6f5c" fill-opacity=".1"/>
+  <path d="M1030 620c-10-118 38-201 122-272" fill="none" stroke="#1f6f5c" stroke-width="3"/>
+  <g fill="url(#leaf)">
+    <path d="M1010 464c-60-3-99-47-100-105 59-2 103 42 100 105Z"/>
+    <path d="M1058 398c-30-49-14-99 27-130 29 55 11 104-27 130Z"/>
+    <path d="M1102 312c-16-55 12-101 59-122 16 60-13 103-59 122Z"/>
+  </g>
+  <text x="92" y="170" fill="#8c5a3c" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="25" letter-spacing="7">NOTES / THOUGHTS / GROWTH</text>
+  <text x="84" y="302" fill="#1d2c25" font-family="Georgia, 'Times New Roman', serif" font-size="108" font-weight="700">A place for</text>
+  <text x="84" y="410" fill="#c96f3b" font-family="Georgia, 'Times New Roman', serif" font-size="108" font-style="italic">slow ideas.</text>
+  <path d="M90 458h330" stroke="#8c5a3c" stroke-width="2"/>
+  <text x="90" y="514" fill="#5d6b63" font-family="ui-monospace, SFMono-Regular, Consolas, monospace" font-size="22">capture · connect · create</text>
+  <g transform="translate(710 185) rotate(-5)">
+    <rect width="355" height="285" rx="10" fill="#fffdf7" stroke="#23302a" stroke-opacity=".15"/>
+    <rect x="28" y="26" width="90" height="26" rx="13" fill="#1f6f5c" fill-opacity=".13"/>
+    <text x="43" y="45" fill="#1f6f5c" font-family="ui-monospace, monospace" font-size="14">NO. 026</text>
+    <path d="M28 92h180M28 124h250M28 156h210M28 188h235M28 220h130" stroke="#3d4a43" stroke-opacity=".33" stroke-width="8" stroke-linecap="round"/>
+    <path d="M28 260h95" stroke="#c96f3b" stroke-width="8" stroke-linecap="round"/>
+  </g>
+  <g transform="translate(758 440) rotate(4)">
+    <rect width="260" height="92" rx="6" fill="#e3d5b8"/>
+    <path d="M28 35h152M28 58h106" stroke="#7e6b4e" stroke-opacity=".55" stroke-width="5" stroke-linecap="round"/>
+  </g>
+  <circle cx="1120" cy="118" r="46" fill="#c96f3b" fill-opacity=".85"/>
+</svg>

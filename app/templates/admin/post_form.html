@@ -1,0 +1,177 @@
+{% extends "admin/base_admin.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}{{ '编辑文章' if post else '写新文章' }}{% endblock %}
+
+{% block admin_content %}
+{% set is_edit = post is not none %}
+<header class="admin-page-head admin-page-head--editor">
+  <div>
+    <nav class="breadcrumb" aria-label="面包屑">
+      <a href="{{ url_for('admin.posts') }}">文章管理</a><span>/</span><span>{{ '编辑' if is_edit else '新建' }}</span>
+    </nav>
+    <h1>{{ '编辑文章' if is_edit else '写一篇新文章' }}</h1>
+  </div>
+  <div class="admin-page-head__actions">
+    {% if is_edit %}
+      <a class="btn btn--ghost btn--sm" href="{{ url_for('main.post_detail', post_id=post.id) }}" target="_blank" rel="noopener">{{ icon('eye', 15) }} 预览</a>
+    {% endif %}
+    <a class="btn btn--ghost btn--sm" href="{{ url_for('admin.posts') }}">{{ icon('arrow-left', 15) }} 返回列表</a>
+  </div>
+</header>
+
+<form class="editor-form" method="post" enctype="multipart/form-data" action="{{ url_for('admin.post_edit', post_id=post.id) if is_edit else url_for('admin.post_new') }}">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="editor-layout">
+    <div class="editor-main">
+      <section class="panel editor-panel">
+        <div class="editor-title-row">
+          <label class="sr-only" for="title">文章标题</label>
+          <input id="title" class="editor-title" name="title" type="text" value="{{ form.get('title', '') }}" maxlength="150" required placeholder="给这篇笔记起一个清晰的标题…">
+          <span class="editor-title__count"><span data-title-count>0</span>/150</span>
+        </div>
+
+        <div class="field">
+          <div class="field__label-row">
+            <label for="summary">摘要 <small>可选，留空则自动截取正文</small></label>
+            <span class="field__hint"><span data-char-count-for="summary">0</span>/300</span>
+          </div>
+          <textarea id="summary" name="summary" rows="2" maxlength="300" placeholder="用一两句话说明这篇笔记解决什么问题。">{{ form.get('summary', '') }}</textarea>
+        </div>
+
+        <div class="editor-toolbar" role="toolbar" aria-label="Markdown 工具栏">
+          <button type="button" data-md-wrap="**" title="加粗 (Ctrl+B)"><strong>B</strong></button>
+          <button type="button" data-md-wrap="*" title="斜体 (Ctrl+I)"><em>I</em></button>
+          <span class="editor-toolbar__divider"></span>
+          <button type="button" data-md-prefix="## " title="二级标题">H2</button>
+          <button type="button" data-md-prefix="### " title="三级标题">H3</button>
+          <button type="button" data-md-wrap="`" title="行内代码"><code>&lt;/&gt;</code></button>
+          <button type="button" data-md-block="code" title="代码块">{{ icon('code', 15) }}</button>
+          <span class="editor-toolbar__divider"></span>
+          <button type="button" data-md-prefix="- " title="无序列表">•</button>
+          <button type="button" data-md-prefix="1. " title="有序列表">1.</button>
+          <button type="button" data-md-prefix="> " title="引用">❝</button>
+          <button type="button" data-md-link title="插入链接">{{ icon('link', 15) }}</button>
+          <button type="button" data-md-table title="插入表格">{{ icon('chart', 15) }}</button>
+          <span class="editor-toolbar__divider"></span>
+          <button type="button" data-insert-image title="上传并插入图片">{{ icon('image', 15) }}</button>
+          <button type="button" data-editor-preview-toggle title="切换预览">{{ icon('eye', 15) }} 预览</button>
+          <span class="editor-toolbar__spacer"></span>
+          <span class="editor-toolbar__hint">Markdown</span>
+        </div>
+
+        <div class="editor-workbench" data-editor data-upload-url="{{ url_for('api.upload_image') }}">
+          <div class="editor-pane">
+            <label class="sr-only" for="content_md">Markdown 正文</label>
+            <textarea id="content_md" name="content_md" class="editor-textarea" required minlength="10" maxlength="200000"
+              placeholder="从这里开始写…&#10;&#10;支持 Markdown：## 标题、**加粗**、`代码`、表格和图片。"
+              data-preview-url="{{ url_for('api.markdown_preview') }}">{{ form.get('content_md', '') }}</textarea>
+          </div>
+          <div class="editor-preview" data-editor-preview>
+            <div class="editor-preview__head"><span>{{ icon('eye', 14) }} 实时预览</span><span class="editor-preview__status" data-preview-status>等待输入</span></div>
+            <div class="prose prose--preview" data-preview-content><p class="editor-preview__empty">在左侧输入 Markdown，这里会实时渲染。</p></div>
+          </div>
+        </div>
+
+        <div class="editor-statusbar">
+          <span>{{ icon('notes', 14) }} <span data-word-count>0</span> 字</span>
+          <span>{{ icon('clock', 14) }} 预计 <span data-reading-time>1</span> 分钟</span>
+          <span class="editor-statusbar__tip">支持 Ctrl/⌘ + B、I 快捷键</span>
+        </div>
+      </section>
+    </div>
+
+    <aside class="editor-side">
+      <section class="panel panel--side">
+        <div class="panel__head panel__head--small"><h2>发布设置</h2></div>
+        <div class="field">
+          <label for="category_id">文章分类</label>
+          <select id="category_id" name="category_id">
+            <option value="">未分类</option>
+            {% for category in categories %}
+              <option value="{{ category.id }}" {% if form.get('category_id')|string == category.id|string %}selected{% endif %}>{{ category.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="field">
+          <div class="field__label-row"><label>选择标签</label><span class="field__hint">可多选</span></div>
+          <div class="tag-checkboxes">
+            {% for tag in tags %}
+              <label class="tag-check">
+                <input type="checkbox" name="tags" value="{{ tag.id }}" {% if tag.id in selected_tag_ids %}checked{% endif %}>
+                <span style="--tag-color: {{ tag.color }}">#{{ tag.name }}</span>
+              </label>
+            {% else %}
+              <p class="muted">还没有标签，可在右侧新建。</p>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="new_tags">新建标签 <small>用逗号分隔，最多 5 个</small></label>
+          <input id="new_tags" name="new_tags" type="text" value="{{ form.get('new_tags', '') }}" maxlength="120" placeholder="例如：Flask, 项目复盘">
+        </div>
+
+        <label class="switch-row">
+          <span><strong>置顶文章</strong><small>在首页和列表优先展示</small></span>
+          <input type="checkbox" name="is_top" {% if form.get('is_top') %}checked{% endif %}>
+          <span class="switch" aria-hidden="true"></span>
+        </label>
+
+        <div class="cover-field">
+          <div class="field__label-row"><label for="cover_image">封面图</label><span class="field__hint">可选</span></div>
+          <div class="cover-preview" data-cover-preview>
+            {% if form.get('cover_image') %}
+              <img src="{{ form.get('cover_image') }}" alt="封面预览">
+            {% else %}
+              <span>{{ icon('image', 22) }} 未选择封面</span>
+            {% endif %}
+          </div>
+          <input id="cover_image" name="cover_image" type="text" value="{{ form.get('cover_image', '') }}" placeholder="/static/... 或 https://..." data-cover-url>
+          <label class="upload-inline">
+            {{ icon('upload', 15) }} 上传本地封面
+            <input type="file" name="cover_file" accept="image/jpeg,image/png,image/gif,image/webp" data-cover-file>
+          </label>
+          <p class="field__hint">JPG / PNG / GIF / WEBP，最大 5MB。</p>
+        </div>
+
+        <div class="publish-actions">
+          {% if is_edit and post.status == 'published' %}
+            <button class="btn btn--primary btn--block" type="submit" name="action" value="publish">{{ icon('check', 17) }} 更新并发布</button>
+            <button class="btn btn--ghost btn--block" type="submit" name="action" value="draft">转为草稿</button>
+          {% else %}
+            <button class="btn btn--primary btn--block" type="submit" name="action" value="publish">{{ icon('upload', 17) }} 发布文章</button>
+            <button class="btn btn--ghost btn--block" type="submit" name="action" value="draft">{{ icon('notes', 17) }} 保存草稿</button>
+          {% endif %}
+        </div>
+      </section>
+
+      {% if is_edit %}
+        <section class="panel panel--side panel--danger-zone">
+          <div class="panel__head panel__head--small"><h2>文章信息</h2></div>
+          <dl class="meta-list">
+            <div><dt>创建</dt><dd>{{ post.created_at|datetime_cn('%Y-%m-%d %H:%M') }}</dd></div>
+            <div><dt>更新</dt><dd>{{ post.updated_at|datetime_cn('%Y-%m-%d %H:%M') }}</dd></div>
+            <div><dt>阅读</dt><dd>{{ post.view_count }}</dd></div>
+            <div><dt>状态</dt><dd>{{ post.status_label }}</dd></div>
+          </dl>
+        </section>
+      {% endif %}
+    </aside>
+  </div>
+</form>
+
+{% if is_edit %}
+  <form class="editor-delete" method="post" action="{{ url_for('admin.post_delete', post_id=post.id) }}" data-confirm="确定删除这篇文章吗？评论和收藏记录也会一并删除，且不可恢复。">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button class="text-danger" type="submit">{{ icon('trash', 15) }} 删除这篇文章</button>
+  </form>
+{% endif %}
+
+<input type="file" accept="image/jpeg,image/png,image/gif,image/webp" data-image-input hidden>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/editor.js') }}" defer></script>
+{% endblock %}

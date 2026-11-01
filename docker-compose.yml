@@ -1,0 +1,52 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: knowledge-stack-db
+    restart: unless-stopped
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_0900_ai_ci
+      - --default-time-zone=+08:00
+    environment:
+      MYSQL_ROOT_PASSWORD: root_password_change_me
+      MYSQL_DATABASE: knowledge_stack
+      MYSQL_USER: blogger
+      MYSQL_PASSWORD: blogger123
+      TZ: Asia/Shanghai
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-ublogger", "-pblogger123"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  app:
+    build: .
+    container_name: knowledge-stack-app
+    restart: unless-stopped
+    environment:
+      FLASK_APP: wsgi.py
+      SECRET_KEY: please-change-this-secret-in-production
+      DATABASE_URL: mysql+pymysql://blogger:blogger123@db:3306/knowledge_stack?charset=utf8mb4
+      TZ: Asia/Shanghai
+      SITE_NAME: 我的知识小栈
+      SITE_AUTHOR: 阿栈
+    ports:
+      - "5000:5000"
+    volumes:
+      - uploads_data:/app/app/static/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "python -m flask --app wsgi init-db &&
+             python -m flask --app wsgi seed-demo &&
+             gunicorn --workers 2 --bind 0.0.0.0:5000 --access-logfile - wsgi:app"
+
+volumes:
+  mysql_data:
+  uploads_data:

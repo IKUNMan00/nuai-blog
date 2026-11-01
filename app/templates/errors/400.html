@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}请求有误{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <div class="container error-page__inner">
+    <div class="error-code">400</div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> BAD REQUEST</p>
+    <h1>这封信好像寄错了地址。</h1>
+    <p>{{ message or '请求参数不完整或表单已过期，请返回上一页刷新后重试。' }}</p>
+    <div class="error-actions">
+      <a class="btn btn--primary" href="{{ url_for('main.index') }}">{{ icon('arrow-left', 16) }} 回到首页</a>
+      <a class="btn btn--ghost" href="{{ url_for('main.posts') }}">浏览文章</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

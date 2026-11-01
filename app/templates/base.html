@@ -1,0 +1,224 @@
+{% from "_macros.html" import icon, avatar %}
+<!doctype html>
+<html lang="zh-CN" data-theme="light">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#f6f4ef">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <meta name="description" content="{% block description %}{{ site_description }}{% endblock %}">
+  <link rel="icon" href="{{ url_for('static', filename='img/favicon.svg') }}" type="image/svg+xml">
+  <title>{% block title %}{{ site_name }}{% endblock %} · {{ site_name }}</title>
+  <script>
+    // 在样式加载前确定主题，避免刷新时出现白屏闪烁
+    (function () {
+      try {
+        var saved = localStorage.getItem("knowledge-stack-theme");
+        var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+        document.documentElement.dataset.theme = saved || (prefersDark ? "dark" : "light");
+      } catch (error) {
+        document.documentElement.dataset.theme = "light";
+      }
+    })();
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  {% block head_extra %}{% endblock %}
+</head>
+<body class="{% block body_class %}{% endblock %}">
+  <a class="skip-link" href="#main">跳到主要内容</a>
+
+  {# ---------- SVG 图标库 ---------- #}
+  <svg class="svg-sprite" aria-hidden="true" width="0" height="0">
+    <defs>
+      <symbol id="i-stack" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/></symbol>
+      <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></symbol>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.42-1.42M17.66 6.34l1.41-1.41"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A8.5 8.5 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
+      <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+      <symbol id="i-arrow-left" viewBox="0 0 24 24"><path d="M19 12H5M11 6l-6 6 6 6"/></symbol>
+      <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>
+      <symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6"/></symbol>
+      <symbol id="i-bookmark" viewBox="0 0 24 24"><path d="M6 4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v17l-6-4-6 4V4Z"/></symbol>
+      <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></symbol>
+      <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></symbol>
+      <symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/></symbol>
+      <symbol id="i-tag" viewBox="0 0 24 24"><path d="M20 13 13 20l-9-9V4h7l9 9Z"/><circle cx="7.5" cy="7.5" r="1"/></symbol>
+      <symbol id="i-edit" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L8 18l-4 1 1-4 11.5-11.5Z"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 14h10l1-14M10 11v6M14 11v6"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 13 4 4L19 7"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/></symbol>
+      <symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="8.5" cy="9" r="1.5"/><path d="m21 15-5-5L5 20"/></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7 0l2-2a5 5 0 0 0-7-7l-1 1"/><path d="M14 11a5 5 0 0 0-7 0l-2 2a5 5 0 0 0 7 7l1-1"/></symbol>
+      <symbol id="i-message" viewBox="0 0 24 24"><path d="M21 15a3 3 0 0 1-3 3H8l-5 3V6a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v9Z"/></symbol>
+      <symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 5.6a5 5 0 0 0-7.1 0L12 7.3l-1.7-1.7a5 5 0 1 0-7.1 7.1L12 21l8.8-8.3a5 5 0 0 0 0-7.1Z"/></symbol>
+      <symbol id="i-pin" viewBox="0 0 24 24"><path d="m9 4 6 6-2 2 4 4-1 1-4-4-2 2-6-6 5-5Z"/><path d="m3 21 6-6"/></symbol>
+      <symbol id="i-chart" viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></symbol>
+      <symbol id="i-notes" viewBox="0 0 24 24"><path d="M6 3h9l4 4v14H6V3Z"/><path d="M15 3v5h4M9 12h7M9 16h7"/></symbol>
+      <symbol id="i-settings" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1a1.7 1.7 0 0 0 1.9.3A1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></symbol>
+      <symbol id="i-logout" viewBox="0 0 24 24"><path d="M10 4H5v16h5M14 8l4 4-4 4M8 12h10"/></symbol>
+      <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></symbol>
+      <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></symbol>
+      <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24"><path d="m12 3 1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8L12 3Z"/><path d="m19 17 .7 2.3L22 20l-2.3.7L19 23l-.7-2.3L16 20l2.3-.7L19 17Z"/></symbol>
+      <symbol id="i-code" viewBox="0 0 24 24"><path d="m8 8-4 4 4 4M16 8l4 4-4 4M14 4l-4 16"/></symbol>
+      <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"/></symbol>
+    </defs>
+  </svg>
+
+  <header class="site-header" data-header>
+    <div class="container header-inner">
+      <a class="brand" href="{{ url_for('main.index') }}" aria-label="{{ site_name }}首页">
+        <span class="brand__mark">{{ icon('stack', 22) }}</span>
+        <span class="brand__text">
+          <strong>{{ site_name }}</strong>
+          <small>KNOWLEDGE STACK</small>
+        </span>
+      </a>
+
+      <nav class="site-nav" id="site-nav" aria-label="主导航">
+        <a class="nav-link {% if request.endpoint == 'main.index' %}is-active{% endif %}" href="{{ url_for('main.index') }}">首页</a>
+        <a class="nav-link {% if request.endpoint in ['main.posts', 'main.post_detail'] %}is-active{% endif %}" href="{{ url_for('main.posts') }}">文章</a>
+        <a class="nav-link {% if request.endpoint == 'main.about' %}is-active{% endif %}" href="{{ url_for('main.about') }}">关于</a>
+        {% if current_user.is_authenticated and current_user.is_admin %}
+          <a class="nav-link {% if request.blueprint == 'admin' %}is-active{% endif %}" href="{{ url_for('admin.dashboard') }}">管理后台</a>
+        {% endif %}
+      </nav>
+
+      <div class="header-actions">
+        <button class="icon-btn" type="button" data-open-search aria-label="搜索文章" title="搜索（按 /）">
+          {{ icon('search', 19) }}
+        </button>
+        <button class="icon-btn theme-toggle" type="button" data-theme-toggle aria-label="切换浅色/暗黑主题" aria-pressed="false" title="切换主题">
+          <span class="theme-toggle__sun">{{ icon('sun', 18) }}</span>
+          <span class="theme-toggle__moon">{{ icon('moon', 18) }}</span>
+        </button>
+
+        {% if current_user.is_authenticated %}
+          <details class="user-menu">
+            <summary class="user-menu__summary">
+              {{ avatar(current_user, size='sm') }}
+              <span class="user-menu__name">{{ current_user.display_name }}</span>
+              {{ icon('chevron-down', 14) }}
+            </summary>
+            <div class="user-menu__panel">
+              <div class="user-menu__head">
+                <strong>{{ current_user.display_name }}</strong>
+                <span>{{ '博主 · 管理员' if current_user.is_admin else '注册读者' }}</span>
+              </div>
+              {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.post_new') }}">{{ icon('edit', 16) }}写新文章</a>
+                <a href="{{ url_for('admin.dashboard') }}">{{ icon('chart', 16) }}数据看板</a>
+              {% endif %}
+              <a href="{{ url_for('account.favorites') }}">{{ icon('bookmark', 16) }}我的收藏</a>
+              <a href="{{ url_for('account.overview') }}">{{ icon('settings', 16) }}账号设置</a>
+              <form method="post" action="{{ url_for('auth.logout') }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit">{{ icon('logout', 16) }}退出登录</button>
+              </form>
+            </div>
+          </details>
+        {% else %}
+          <a class="btn btn--ghost btn--sm header-login" href="{{ url_for('auth.login') }}">登录</a>
+          <a class="btn btn--primary btn--sm header-register" href="{{ url_for('auth.register') }}">注册</a>
+        {% endif %}
+
+        <button class="icon-btn mobile-toggle" type="button" data-nav-toggle aria-label="打开导航" aria-expanded="false" aria-controls="site-nav">
+          <span class="mobile-toggle__open">{{ icon('menu', 21) }}</span>
+          <span class="mobile-toggle__close">{{ icon('close', 21) }}</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="flash-stack container" aria-live="polite">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, message in messages %}
+        <div class="flash flash--{{ category }}" data-flash role="status">
+          <span class="flash__icon">{% if category == 'success' %}{{ icon('check', 17) }}{% elif category == 'danger' %}{{ icon('close', 17) }}{% else %}{{ icon('spark', 17) }}{% endif %}</span>
+          <span class="flash__text">{{ message }}</span>
+          <button type="button" class="flash__close" data-close-flash aria-label="关闭提示">{{ icon('close', 14) }}</button>
+        </div>
+      {% endfor %}
+    {% endwith %}
+  </div>
+
+  <main id="main" class="site-main">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <a class="brand brand--footer" href="{{ url_for('main.index') }}">
+          <span class="brand__mark">{{ icon('stack', 21) }}</span>
+          <span class="brand__text"><strong>{{ site_name }}</strong><small>KNOWLEDGE STACK</small></span>
+        </a>
+        <p>{{ site_subtitle }}</p>
+        <p class="footer-note">用 Flask + MySQL + 原生前端构建 · 2026 课程综合训练项目</p>
+      </div>
+      <div class="footer-col">
+        <h3>浏览</h3>
+        <a href="{{ url_for('main.posts') }}">全部文章</a>
+        <a href="{{ url_for('main.posts', q='Flask') }}">Flask 笔记</a>
+        <a href="{{ url_for('main.posts', q='MySQL') }}">数据库</a>
+        <a href="{{ url_for('main.about') }}">关于小栈</a>
+      </div>
+      <div class="footer-col">
+        <h3>账号</h3>
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('account.favorites') }}">我的收藏</a>
+          <a href="{{ url_for('account.comments') }}">我的评论</a>
+          <a href="{{ url_for('account.overview') }}">账号设置</a>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}">登录</a>
+          <a href="{{ url_for('auth.register') }}">注册读者账号</a>
+        {% endif %}
+        {% if current_user.is_authenticated and current_user.is_admin %}
+          <a href="{{ url_for('admin.post_new') }}">写新文章</a>
+        {% endif %}
+      </div>
+      <div class="footer-col footer-col--quote">
+        <h3>小栈便签</h3>
+        <blockquote>“把每一次踩坑，写成下一次的捷径。”</blockquote>
+        <span class="footer-stamp">{{ icon('spark', 14) }} EST. 2026</span>
+      </div>
+    </div>
+    <div class="container footer-bottom">
+      <span>© {{ current_year }} {{ site_name }} · {{ site_author }}</span>
+      <span>课程项目 · 仅供学习交流</span>
+    </div>
+  </footer>
+
+  <button class="back-to-top" type="button" data-back-to-top aria-label="回到顶部">{{ icon('arrow-up-right', 18) }}</button>
+
+  <dialog class="search-modal" id="search-modal" aria-labelledby="search-title">
+    <div class="search-modal__inner">
+      <div class="search-modal__head">
+        <span class="eyebrow">{{ icon('search', 15) }} 搜索知识栈</span>
+        <button class="icon-btn" type="button" data-close-search aria-label="关闭搜索">{{ icon('close', 19) }}</button>
+      </div>
+      <h2 id="search-title">今天想找点什么？</h2>
+      <form class="search-modal__form" method="get" action="{{ url_for('main.search') }}">
+        <label class="sr-only" for="global-search-input">搜索关键词</label>
+        <input id="global-search-input" name="q" type="search" placeholder="输入标题、摘要或正文关键词…" autocomplete="off" maxlength="80">
+        <button class="btn btn--primary" type="submit">{{ icon('search', 18) }} 搜索</button>
+      </form>
+      <div class="search-modal__hints">
+        <span>试试：</span>
+        <a href="{{ url_for('main.posts', q='Flask') }}">Flask</a>
+        <a href="{{ url_for('main.posts', q='MySQL') }}">MySQL</a>
+        <a href="{{ url_for('main.posts', q='CSS') }}">CSS</a>
+        <a href="{{ url_for('main.posts', q='复盘') }}">复盘</a>
+      </div>
+      <p class="search-modal__tip">按 <kbd>Esc</kbd> 关闭 · 按 <kbd>/</kbd> 快速打开</p>
+    </div>
+  </dialog>
+
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

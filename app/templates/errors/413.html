@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "_macros.html" import icon %}
+{% block title %}文件过大{% endblock %}
+
+{% block content %}
+<section class="error-page">
+  <div class="container error-page__inner">
+    <div class="error-code">413</div>
+    <p class="eyebrow"><span class="eyebrow__line"></span> PAYLOAD TOO LARGE</p>
+    <h1>这张图片太重，栈板承受不住。</h1>
+    <p>单次上传不能超过 8MB，单张图片建议控制在 5MB 以内。请压缩后重试。</p>
+    <div class="error-actions">
+      <a class="btn btn--primary" href="{{ url_for('admin.attachments') if current_user.is_authenticated and current_user.is_admin else url_for('main.index') }}">{{ icon('arrow-left', 16) }} 返回并重新上传</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
